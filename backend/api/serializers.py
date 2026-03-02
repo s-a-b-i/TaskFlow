@@ -155,6 +155,7 @@ class RemoveMemberSerializer(serializers.Serializer):
     """Used to remove a member from a team by user ID."""
 
     user_id = serializers.IntegerField()
+    force = serializers.BooleanField(default=False)
 
 
 # ────────────────────────────────────────────────────────────

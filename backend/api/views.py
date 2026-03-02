@@ -224,7 +224,7 @@ class TeamViewSet(viewsets.ModelViewSet):
     def remove_member(self, request, pk=None):
         """
         POST /api/teams/{id}/remove_member/
-        Body: { "user_id": 5 }
+        Body: { "user_id": 5, "force": false }
         """
         team = self.get_object()
         self._assert_owner(request, team)
@@ -232,6 +232,7 @@ class TeamViewSet(viewsets.ModelViewSet):
         serializer = RemoveMemberSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user_id = serializer.validated_data['user_id']
+        force = serializer.validated_data['force']
 
         # Prevent removing the owner
         if team.creator_id == user_id:
@@ -240,13 +241,29 @@ class TeamViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Check for assigned tasks
+        assigned_tasks_count = Task.objects.filter(team=team, assigned_to_id=user_id).count()
+
+        if assigned_tasks_count > 0 and not force:
+            return Response(
+                {
+                    'warning': 'user_has_tasks',
+                    'task_count': assigned_tasks_count,
+                    'detail': f'User is assigned to {assigned_tasks_count} tasks in this team. Removing them will unassign these tasks.'
+                },
+                status=status.HTTP_200_OK,  # Return 200 so frontend can handle the warning gracefully
+            )
+
+        # Unassign tasks first (SET_NULL would handle this if user was deleted, but here it's team removal)
+        Task.objects.filter(team=team, assigned_to_id=user_id).update(assigned_to=None)
+
         deleted, _ = TeamMembership.objects.filter(team=team, user_id=user_id).delete()
         if deleted == 0:
             return Response(
                 {'detail': 'User is not a member of this team.'},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        return Response({'message': 'Member removed successfully.'})
+        return Response({'message': 'Member removed and tasks unassigned successfully.'})
 
 
 # ════════════════════════════════════════════════════════════

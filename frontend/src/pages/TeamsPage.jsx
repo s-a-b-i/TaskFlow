@@ -139,10 +139,17 @@ export default function TeamsPage() {
     })
 
     const removeMember = useMutation({
-        mutationFn: ({ teamId, userId }) => api.post(`/teams/${teamId}/remove_member/`, { user_id: userId }),
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ['teams'] })
-            toast.success('Member removed')
+        mutationFn: ({ teamId, userId, force = false }) =>
+            api.post(`/teams/${teamId}/remove_member/`, { user_id: userId, force }),
+        onSuccess: async (res, variables) => {
+            if (res.data.warning === 'user_has_tasks') {
+                if (confirm(`${res.data.detail} This will unassign the member from these tasks. Proceed?`)) {
+                    removeMember.mutate({ ...variables, force: true })
+                }
+            } else {
+                await queryClient.invalidateQueries({ queryKey: ['teams'] })
+                toast.success('Member removed')
+            }
         },
         onError: (err) => toast.error(err.displayMessage)
     })

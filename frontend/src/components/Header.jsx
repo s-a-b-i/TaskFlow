@@ -142,7 +142,7 @@ export default function Header({ toggleSidebar, toggleMobileSidebar, isSidebarCo
                     </button>
 
                     {showNotifications && (
-                        <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-xl border border-slate-100 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="fixed inset-x-4 top-16 md:absolute md:inset-auto md:right-0 md:top-full md:mt-2 md:w-80 bg-white rounded-xl border border-slate-100 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                             <div className="p-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
                                 <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-900">Notifications</h3>
                                 {unreadNotifications.length > 0 && (

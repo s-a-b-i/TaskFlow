@@ -168,7 +168,7 @@ export default function TasksPage() {
                                         <div className="flex justify-between items-start mb-3">
                                             <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">{task.team_name}</span>
                                             {user?.id === task.created_by?.id && (
-                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex gap-1 transition-opacity">
                                                     <button onClick={() => { setActiveTask(task); setIsModalOpen(true); }} className="p-1.5 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-colors">
                                                         <Edit2 className="w-3.5 h-3.5" />
                                                     </button>
