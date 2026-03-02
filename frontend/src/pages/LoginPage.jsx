@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { CheckSquare, Eye, EyeOff, LogIn } from 'lucide-react'
+import { CheckSquare, Mail, Lock, ArrowRight } from 'lucide-react'
 import api from '../lib/api'
 import { useAuthStore } from '../store/authStore'
 import toast from 'react-hot-toast'
@@ -16,7 +16,6 @@ const schema = z.object({
 export default function LoginPage() {
     const navigate = useNavigate()
     const setUser = useAuthStore((s) => s.setUser)
-    const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
 
     const {
@@ -41,83 +40,85 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#EFF6FF] via-white to-[#F0FDF4] flex items-center justify-center p-4">
-            <div className="w-full max-w-md">
-                {/* Logo */}
-                <div className="flex flex-col items-center mb-8">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#2563EB] to-[#1D4ED8] flex items-center justify-center shadow-lg mb-4">
-                        <CheckSquare className="w-6 h-6 text-white" />
+        <div className="min-h-screen bg-background flex flex-col justify-center py-12 px-6 lg:px-8">
+            <div className="sm:mx-auto sm:w-full sm:max-w-md">
+                <div className="flex justify-center mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                        <CheckSquare className="w-7 h-7 text-white" />
                     </div>
-                    <h1 className="text-2xl font-bold text-[#111827]">TaskFlow</h1>
-                    <p className="text-sm text-[#6B7280] mt-1">Sign in to your workspace</p>
                 </div>
+                <h2 className="text-center text-3xl font-black text-slate-900 tracking-tight">
+                    Welcome Back
+                </h2>
+                <p className="mt-2 text-center text-sm font-bold text-slate-400 uppercase tracking-widest">
+                    Login to TaskFlow
+                </p>
+            </div>
 
-                {/* Card */}
-                <div className="card p-8 shadow-lg border border-[#E5E7EB]">
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
-                        {/* Root error */}
+            <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
+                <div className="card p-8 bg-white border-slate-200">
+                    <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
                         {errors.root && (
                             <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
                                 {errors.root.message}
                             </div>
                         )}
-
-                        {/* Email */}
                         <div>
-                            <label className="label">Email address</label>
-                            <input
-                                type="email"
-                                autoComplete="email"
-                                className={`input ${errors.email ? 'border-red-400 focus:border-red-400 focus:ring-red-200' : ''}`}
-                                placeholder="you@company.com"
-                                {...register('email')}
-                            />
-                            {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
+                            <label className="label">Email Address</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Mail className="h-4 w-4 text-slate-400" />
+                                </div>
+                                <input
+                                    type="email"
+                                    className={`input pl-10 ${errors.email ? 'border-red-400' : ''}`}
+                                    placeholder="your@email.com"
+                                    {...register('email')}
+                                />
+                            </div>
+                            {errors.email && <p className="text-[10px] font-bold text-rose-500 mt-2 uppercase tracking-widest">{errors.email.message}</p>}
                         </div>
 
-                        {/* Password */}
                         <div>
                             <label className="label">Password</label>
                             <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Lock className="h-4 w-4 text-slate-400" />
+                                </div>
                                 <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    autoComplete="current-password"
-                                    className={`input pr-10 ${errors.password ? 'border-red-400' : ''}`}
-                                    placeholder="Enter your password"
+                                    type="password"
+                                    className={`input pl-10 ${errors.password ? 'border-red-400' : ''}`}
+                                    placeholder="••••••••"
                                     {...register('password')}
                                 />
-                                <button
-                                    type="button"
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280] transition-colors"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                >
-                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                </button>
                             </div>
-                            {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>}
+                            {errors.password && <p className="text-[10px] font-bold text-rose-500 mt-2 uppercase tracking-widest">{errors.password.message}</p>}
                         </div>
 
-                        {/* Submit */}
-                        <button
-                            type="submit"
-                            className="btn-primary w-full py-2.5 text-sm font-semibold"
-                            disabled={isLoading}
-                        >
-                            {isLoading ? (
-                                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            ) : (
-                                <LogIn className="w-4 h-4" />
-                            )}
-                            {isLoading ? 'Signing in…' : 'Sign in'}
-                        </button>
+                        <div>
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="btn-primary w-full h-11 text-xs uppercase tracking-[0.2em] font-black"
+                            >
+                                {isLoading ? 'Logging in...' : 'Login Now'}
+                                {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
+                            </button>
+                        </div>
                     </form>
+
+                    <div className="mt-8 pt-8 border-t border-slate-50 text-center">
+                        <p className="text-sm font-medium text-slate-500">
+                            Need an account?{' '}
+                            <Link to="/register" className="font-bold text-primary hover:text-primary-hover transition-colors">
+                                Create one here
+                            </Link>
+                        </p>
+                    </div>
                 </div>
 
-                <p className="text-center text-sm text-[#6B7280] mt-6">
-                    Don't have an account?{' '}
-                    <Link to="/register" className="text-[#2563EB] font-semibold hover:text-[#1D4ED8] transition-colors">
-                        Create one
-                    </Link>
+                <p className="mt-8 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    &copy; {new Date().getFullYear()} TaskFlow Manager
                 </p>
             </div>
         </div>

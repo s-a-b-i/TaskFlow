@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import api from '../lib/api'
+import { X } from 'lucide-react'
 
 export default function TaskModal({ task, teams, onClose }) {
     const queryClient = useQueryClient()
@@ -58,35 +59,47 @@ export default function TaskModal({ task, teams, onClose }) {
     })
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="card w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-                <h2 className="text-xl font-bold mb-6">{isEditing ? 'Edit Task' : 'Create Task'}</h2>
+        <div className="fixed inset-0 bg-slate-900/10 backdrop-blur-[2px] z-50 flex items-center justify-center p-6">
+            <div className="card w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                    <div>
+                        <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest">
+                            {isEditing ? 'Edit Task' : 'New Task'}
+                        </h2>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">
+                            Task details
+                        </p>
+                    </div>
+                    <button onClick={onClose} className="p-1 hover:bg-slate-100 text-slate-400 rounded-lg transition-colors">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
 
-                <form onSubmit={handleSubmit(mutation.mutate)} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form onSubmit={handleSubmit(mutation.mutate)} className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="col-span-full">
-                            <label className="label">Title</label>
-                            <input className="input" placeholder="Task title" {...register('title', { required: 'Title is required' })} />
-                            {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title.message}</p>}
+                            <label className="label">Task Title</label>
+                            <input className="input h-11 font-bold" placeholder="What needs to be done?" {...register('title', { required: 'Title is required' })} />
+                            {errors.title && <p className="text-[10px] font-bold text-rose-500 mt-1.5 uppercase tracking-widest">{errors.title.message}</p>}
                         </div>
 
                         <div className="col-span-full">
                             <label className="label">Description</label>
-                            <textarea className="input min-h-[100px]" placeholder="Add details..." {...register('description')} />
+                            <textarea className="input min-h-[100px] py-2.5 leading-relaxed" placeholder="Add some details..." {...register('description')} />
                         </div>
 
                         <div>
-                            <label className="label">Workspace</label>
-                            <select className="input" disabled={isEditing} {...register('team', { required: 'Workspace is required' })}>
-                                <option value="">Select Workspace</option>
+                            <label className="label">Team</label>
+                            <select className="input h-11 font-bold" disabled={isEditing} {...register('team', { required: 'Workspace is required' })}>
+                                <option value="">Select Team</option>
                                 {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                             </select>
                         </div>
 
                         <div>
-                            <label className="label">Assign To</label>
-                            <select className="input" {...register('assigned_to_id')}>
-                                <option value="">Unassigned</option>
+                            <label className="label">Assigned To</label>
+                            <select className="input h-11 font-bold" {...register('assigned_to_id')}>
+                                <option value="">Select member</option>
                                 {members.map(m => (
                                     <option key={m.user.id} value={m.user.id}>{m.user.email}</option>
                                 ))}
@@ -94,31 +107,31 @@ export default function TaskModal({ task, teams, onClose }) {
                         </div>
 
                         <div>
-                            <label className="label">Status</label>
-                            <select className="input" {...register('status')}>
+                            <label className="label">Task Status</label>
+                            <select className="input h-11 font-bold uppercase tracking-widest text-[11px]" {...register('status')}>
                                 <option value="todo">To Do</option>
-                                <option value="in_progress">In Progress</option>
+                                <option value="in_progress">Doing</option>
                                 <option value="done">Done</option>
                             </select>
                         </div>
 
                         <div>
                             <label className="label">Priority</label>
-                            <select className="input" {...register('priority')}>
+                            <select className="input h-11 font-bold uppercase tracking-widest text-[11px]" {...register('priority')}>
                                 <option value="low">Low</option>
                                 <option value="medium">Medium</option>
                                 <option value="high">High</option>
                             </select>
                         </div>
 
-                        <div>
+                        <div className="col-span-full">
                             <label className="label">Due Date</label>
-                            <input type="date" className="input" {...register('due_date')} />
+                            <input type="date" className="input h-11 font-bold" {...register('due_date')} />
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
-                        <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
+                    <div className="flex justify-end gap-3 pt-6 border-t border-slate-50">
+                        <button type="button" onClick={onClose} className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2">Cancel</button>
                         <button type="submit" className="btn-primary" disabled={mutation.isPending}>
                             {mutation.isPending ? 'Saving...' : 'Save Task'}
                         </button>

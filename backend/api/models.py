@@ -134,3 +134,26 @@ class Task(models.Model):
 
     def __str__(self):
         return f'{self.title} [{self.status}]'
+class Notification(models.Model):
+    """
+    User-specific notifications for overdue tasks, team updates, etc.
+    """
+    NOTIFICATION_TYPES = [
+        ('overdue_task', 'Overdue Task'),
+        ('team_update', 'Team Update'),
+        ('task_assignment', 'Task Assignment'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES, default='overdue_task')
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'notifications'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user.email}: {self.title}'

@@ -9,7 +9,19 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
-from .models import Task, Team, TeamMembership, User
+from .models import Task, Team, TeamMembership, User, Notification
+
+
+# ────────────────────────────────────────────────────────────
+# Notification Serializers
+# ────────────────────────────────────────────────────────────
+class NotificationSerializer(serializers.ModelSerializer):
+    """Full notification representation."""
+
+    class Meta:
+        model = Notification
+        fields = ['id', 'title', 'message', 'type', 'is_read', 'created_at']
+        read_only_fields = ['id', 'created_at']
 
 
 # ────────────────────────────────────────────────────────────

@@ -13,12 +13,14 @@ from .views import (
     RegisterView,
     TaskViewSet,
     TeamViewSet,
+    NotificationViewSet,
 )
 
 # Auto-generate CRUD routes for ViewSets
 router = DefaultRouter()
 router.register(r'teams', TeamViewSet, basename='team')
 router.register(r'tasks', TaskViewSet, basename='task')
+router.register(r'notifications', NotificationViewSet, basename='notification')
 
 urlpatterns = [
     # Auth endpoints

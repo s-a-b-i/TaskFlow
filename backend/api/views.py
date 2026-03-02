@@ -17,12 +17,12 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Task, Team, TeamMembership, User
+from .models import Task, Team, TeamMembership, User, Notification
 from .permissions import IsTeamOwner
 from .serializers import (
-    AddMemberSerializer,
-    LoginSerializer,
+    NotificationSerializer,
     RegisterSerializer,
+    LoginSerializer,
     RemoveMemberSerializer,
     TaskSerializer,
     TeamCreateSerializer,
@@ -263,6 +263,11 @@ class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
 
+    def _get_today(self):
+        # Using localtime ensures we match the user's current calendar day
+        # instead of UTC, which might still be "yesterday"
+        return timezone.localtime(timezone.now()).date()
+
     def get_queryset(self):
         """
         Return tasks from teams the current user belongs to,
@@ -312,13 +317,33 @@ class TaskViewSet(viewsets.ModelViewSet):
         # Show only overdue tasks
         if params.get('overdue') == 'true':
             qs = qs.filter(
-                due_date__lt=timezone.now().date()
+                due_date__lt=self._get_today()
             ).exclude(status='done')
 
         return qs
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        task = serializer.save(created_by=self.request.user)
+        # Create notification if assigned to someone else
+        if task.assigned_to and task.assigned_to != self.request.user:
+            Notification.objects.create(
+                user=task.assigned_to,
+                title="New Task Assigned",
+                message=f"You have been assigned to: {task.title}",
+                type='task_assignment'
+            )
+
+    def perform_update(self, serializer):
+        old_task = self.get_object()
+        task = serializer.save()
+        # Create notification if assignment changed
+        if task.assigned_to and task.assigned_to != old_task.assigned_to and task.assigned_to != self.request.user:
+            Notification.objects.create(
+                user=task.assigned_to,
+                title="New Task Assigned",
+                message=f"You have been assigned to: {task.title}",
+                type='task_assignment'
+            )
 
     def destroy(self, request, *args, **kwargs):
         """
@@ -349,7 +374,7 @@ class DashboardView(APIView):
 
     def get(self, request):
         user = request.user
-        today = timezone.now().date()
+        today = timezone.localtime(timezone.now()).date()
 
         # Teams user belongs to
         user_teams = Team.objects.filter(memberships__user=user)
@@ -357,13 +382,39 @@ class DashboardView(APIView):
         # Tasks visible to user (from their teams)
         user_tasks = Task.objects.filter(team__memberships__user=user).distinct()
 
-        # Overdue tasks (bonus: reminder feature)
+        # Proactively identify overdue tasks and create notifications
         overdue_tasks = user_tasks.filter(
             due_date__lt=today,
         ).exclude(status='done')
 
-        # Tasks due today
         due_today = user_tasks.filter(due_date=today).exclude(status='done')
+
+        for task in overdue_tasks:
+            # Ensure the assignee gets a notification if it's the first time they're seeing it today
+            if task.assigned_to:
+                # Check for existing notification for this task and user TODAY
+                # We use title matching as a simple check for now
+                existing = Notification.objects.filter(
+                    user=task.assigned_to,
+                    type='overdue_task',
+                    title__icontains=task.title,
+                ).order_by('-created_at').first()
+
+                # Notify once per day if still overdue
+                should_notify = True
+                if existing:
+                    # If already notified today (local time), skip
+                    existing_local = timezone.localtime(existing.created_at).date()
+                    if existing_local == today:
+                        should_notify = False
+
+                if should_notify:
+                    Notification.objects.create(
+                        user=task.assigned_to,
+                        title=f"Overdue: {task.title}",
+                        message=f"The task '{task.title}' was due on {task.due_date}.",
+                        type='overdue_task'
+                    )
 
         return Response({
             'teams_count': user_teams.count(),
@@ -380,8 +431,38 @@ class DashboardView(APIView):
                 'overdue': overdue_tasks.filter(assigned_to=user).count(),
             },
             'overdue_tasks': TaskSerializer(
-                overdue_tasks.filter(assigned_to=user)[:5],
+                overdue_tasks[:5],  # Show all overdue tasks in user's teams
                 many=True,
                 context={'request': request},
             ).data,
         })
+
+
+
+
+# ════════════════════════════════════════════════════════════
+# 5. NOTIFICATION VIEWS
+# ════════════════════════════════════════════════════════════
+
+class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    GET /api/notifications/ – list unread
+    POST /api/notifications/{id}/read/ – mark as read
+    """
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def read(self, request, pk=None):
+        notification = self.get_object()
+        notification.is_read = True
+        notification.save()
+        return Response({'status': 'notification marked as read'})
+
+    @action(detail=False, methods=['post'])
+    def read_all(self, request):
+        Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+        return Response({'status': 'all notifications marked as read'})

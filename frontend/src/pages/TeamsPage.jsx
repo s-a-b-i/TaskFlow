@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Users, UserPlus, Trash2, Edit2, Shield, User } from 'lucide-react'
+import { Plus, Users, UserPlus, Trash2, Edit2, Shield, User, X } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import api from '../lib/api'
@@ -9,7 +9,7 @@ import { useForm } from 'react-hook-form'
 
 function TeamModal({ team, onClose }) {
     const queryClient = useQueryClient()
-    const { register, handleSubmit, formState: { errors } } = useForm({
+    const { register, handleSubmit, setError, formState: { errors } } = useForm({
         defaultValues: team || { name: '', description: '' }
     })
 
@@ -33,23 +33,28 @@ function TeamModal({ team, onClose }) {
     })
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="card w-full max-w-md p-6">
-                <h2 className="text-xl font-bold mb-4">{team ? 'Edit Workspace' : 'Create Workspace'}</h2>
-                <form onSubmit={handleSubmit(mutation.mutate)} className="space-y-4">
+        <div className="fixed inset-0 bg-slate-900/10 backdrop-blur-[2px] z-50 flex items-center justify-center p-6">
+            <div className="card w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                    <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest">{team ? 'Edit Team' : 'Create Team'}</h2>
+                    <button onClick={onClose} className="p-1 hover:bg-slate-100 text-slate-400 rounded-lg transition-colors">
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+                <form onSubmit={handleSubmit(mutation.mutate)} className="p-6 space-y-6">
                     <div>
-                        <label className="label">Workspace Name</label>
-                        <input className="input" {...register('name', { required: 'Name is required' })} />
-                        {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>}
+                        <label className="label">Team Name</label>
+                        <input className="input" placeholder="e.g. Design, Marketing..." {...register('name', { required: 'Name is required' })} />
+                        {errors.name && <p className="text-[10px] font-bold text-rose-500 mt-1.5 uppercase tracking-widest">{errors.name.message}</p>}
                     </div>
                     <div>
-                        <label className="label">Description (Optional)</label>
-                        <textarea className="input min-h-[100px]" {...register('description')} />
+                        <label className="label">Description</label>
+                        <textarea className="input min-h-[100px] py-2.5" placeholder="What is this team for?..." {...register('description')} />
                     </div>
-                    <div className="flex justify-end gap-3 pt-4">
-                        <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
+                    <div className="flex justify-end gap-3 pt-4 border-t border-slate-50">
+                        <button type="button" onClick={onClose} className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2">Cancel</button>
                         <button type="submit" className="btn-primary" disabled={mutation.isPending}>
-                            {mutation.isPending ? 'Saving...' : 'Save Workspace'}
+                            {mutation.isPending ? 'Saving...' : 'Save Team'}
                         </button>
                     </div>
                 </form>
@@ -60,7 +65,7 @@ function TeamModal({ team, onClose }) {
 
 function MemberModal({ team, onClose }) {
     const queryClient = useQueryClient()
-    const { register, handleSubmit, formState: { errors } } = useForm()
+    const { register, handleSubmit, setError, formState: { errors } } = useForm()
 
     const mutation = useMutation({
         mutationFn: (data) => api.post(`/teams/${team.id}/add_member/`, data),
@@ -79,26 +84,32 @@ function MemberModal({ team, onClose }) {
     })
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="card w-full max-w-md p-6">
-                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    <UserPlus className="w-5 h-5" />
-                    Invite Member
-                </h2>
-                <p className="text-sm text-gray-500 mb-4">Invite an existing user to <strong>{team.name}</strong> by email.</p>
-                <form onSubmit={handleSubmit(mutation.mutate)} className="space-y-4">
-                    <div>
-                        <label className="label">Email Address</label>
-                        <input type="email" className="input" placeholder="user@example.com" {...register('email', { required: 'Email required' })} />
-                        {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
-                    </div>
-                    <div className="flex justify-end gap-3 pt-4">
-                        <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
-                        <button type="submit" className="btn-primary" disabled={mutation.isPending}>
-                            {mutation.isPending ? 'Inviting...' : 'Send Invite'}
-                        </button>
-                    </div>
-                </form>
+        <div className="fixed inset-0 bg-slate-900/10 backdrop-blur-[2px] z-50 flex items-center justify-center p-6">
+            <div className="card w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                    <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest">Add Member</h2>
+                    <button onClick={onClose} className="p-1 hover:bg-slate-100 text-slate-400 rounded-lg transition-colors">
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+                <div className="p-6">
+                    <p className="text-xs text-slate-500 font-medium mb-6 leading-relaxed">
+                        Add a person to this team by their email.
+                    </p>
+                    <form onSubmit={handleSubmit(mutation.mutate)} className="space-y-6">
+                        <div>
+                            <label className="label">Email Address</label>
+                            <input type="email" className="input" placeholder="someone@email.com" {...register('email', { required: 'Email required' })} />
+                            {errors.email && <p className="text-[10px] font-bold text-rose-500 mt-1.5 uppercase tracking-widest">{errors.email.message}</p>}
+                        </div>
+                        <div className="flex justify-end gap-3 pt-4 border-t border-slate-50">
+                            <button type="button" onClick={onClose} className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2">Cancel</button>
+                            <button type="submit" className="btn-primary" disabled={mutation.isPending}>
+                                {mutation.isPending ? 'Adding...' : 'Add Member'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     )
@@ -122,7 +133,7 @@ export default function TeamsPage() {
         mutationFn: (id) => api.delete(`/teams/${id}/`),
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ['teams'] })
-            toast.success('Workspace deleted')
+            toast.success('Team deleted')
         },
         onError: (err) => toast.error(err.displayMessage)
     })
@@ -136,37 +147,35 @@ export default function TeamsPage() {
         onError: (err) => toast.error(err.displayMessage)
     })
 
-    if (isLoading) return <div className="p-8 animate-pulse bg-gray-200 h-screen rounded -ml-6 -mt-6" />
+    if (isLoading) return <div className="p-8 animate-pulse bg-slate-50 h-screen rounded-xl" />
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
+        <div className="space-y-8">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-6">
                 <div>
-                    <h1 className="text-2xl font-bold flex items-center gap-2">
-                        <Users className="w-6 h-6 text-blue-600" />
-                        My Workspaces
+                    <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                        Workspaces
                     </h1>
-                    <p className="text-gray-500 text-sm mt-1">Manage your teams and collaborations</p>
+                    <p className="text-slate-500 text-sm font-medium mt-1">Manage your teams and members</p>
                 </div>
                 <button
                     onClick={() => { setActiveTeam(null); setModalType('team'); }}
                     className="btn-primary"
                 >
-                    <Plus className="w-4 h-4" /> New Workspace
+                    Create New Team
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                 {teams.length === 0 ? (
-                    <div className="col-span-full py-12 text-center bg-white rounded-xl border border-gray-200 border-dashed">
-                        <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                        <h3 className="text-lg font-medium text-gray-900">No workspaces yet</h3>
-                        <p className="text-gray-500 text-sm mb-4">Create a workspace to start collaborating.</p>
+                    <div className="col-span-full py-20 text-center card border-dashed border-slate-300">
+                        <Users className="w-12 h-12 text-slate-200 mx-auto mb-4" />
+                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">No Teams Yet</h3>
                         <button
                             onClick={() => { setActiveTeam(null); setModalType('team'); }}
-                            className="btn-primary mx-auto"
+                            className="btn-secondary mx-auto mt-6"
                         >
-                            Create Workspace
+                            Create Team
                         </button>
                     </div>
                 ) : (
@@ -174,30 +183,29 @@ export default function TeamsPage() {
                         const isOwner = team.user_role === 'owner'
 
                         return (
-                            <div key={team.id} className="card overflow-hidden flex flex-col">
+                            <div key={team.id} className="card overflow-hidden flex flex-col group hover:border-blue-300 transition-colors">
                                 {/* Header */}
-                                <div className="p-5 border-b border-gray-100 flex justify-between items-start bg-gray-50/50">
-                                    <div>
+                                <div className="p-6 border-b border-slate-50 flex justify-between items-start bg-slate-50/30">
+                                    <div className="flex-1 pr-4">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <h3 className="font-bold text-lg">{team.name}</h3>
-                                            {isOwner && <span className="badge bg-amber-100 text-amber-700 text-[10px] px-1.5 py-0.5">Owner</span>}
+                                            <h3 className="font-bold text-slate-900">{team.name}</h3>
+                                            {isOwner && <span className="text-[9px] font-black bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-100 uppercase tracking-widest">Owner</span>}
                                         </div>
-                                        <p className="text-sm text-gray-500 line-clamp-2 min-h-5">{team.description || 'No description'}</p>
-                                        <p className="text-xs text-gray-400 mt-2">Created {format(new Date(team.created_at), 'MMM d, yyyy')}</p>
+                                        <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed h-8">{team.description || 'No description provided.'}</p>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-4">Created: {format(new Date(team.created_at), 'MMM yyyy')}</p>
                                     </div>
                                     {isOwner && (
-                                        <div className="flex items-center gap-1">
-                                            <button onClick={() => { setActiveTeam(team); setModalType('team'); }} className="btn-ghost btn-sm text-blue-600 hover:bg-blue-50">
-                                                <Edit2 className="w-3.5 h-3.5" /> Edit
+                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => { setActiveTeam(team); setModalType('team'); }} className="p-2 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-colors">
+                                                <Edit2 className="w-3.5 h-3.5" />
                                             </button>
                                             <button
                                                 onClick={() => {
-                                                    if (confirm(`Delete workspace "${team.name}" and all its tasks?`)) {
+                                                    if (confirm(`Delete team "${team.name}"?`)) {
                                                         deleteTeam.mutate(team.id)
                                                     }
                                                 }}
-                                                className="btn-ghost btn-sm text-red-600 hover:bg-red-50"
-                                                title="Delete workspace"
+                                                className="p-2 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-colors"
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />
                                             </button>
@@ -206,44 +214,41 @@ export default function TeamsPage() {
                                 </div>
 
                                 {/* Members list */}
-                                <div className="p-5 flex-1 bg-white">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h4 className="text-xs font-bold text-gray-500 uppercase">Members ({team.member_count})</h4>
+                                <div className="p-6 flex-1">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Team Members ({team.member_count})</h4>
                                         {isOwner && (
-                                            <button onClick={() => { setActiveTeam(team); setModalType('member'); }} className="btn-ghost btn-sm text-blue-600 py-1">
-                                                <UserPlus className="w-3.5 h-3.5" /> Invite
+                                            <button onClick={() => { setActiveTeam(team); setModalType('member'); }} className="text-[10px] font-black text-blue-600 hover:text-blue-700 uppercase tracking-widest p-1">
+                                                Add Member
                                             </button>
                                         )}
                                     </div>
 
-                                    <div className="space-y-2">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                         {team.members.map(member => (
-                                            <div key={member.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-7 h-7 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">
-                                                        {member.user.first_name?.[0] || member.user.username?.[0] || '?'}
+                                            <div key={member.id} className="flex items-center justify-between p-2.5 rounded-lg border border-slate-50 bg-slate-50/30 group/member hover:bg-white hover:border-slate-200 transition-all">
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="w-8 h-8 bg-white border border-slate-200 text-blue-600 rounded-lg flex items-center justify-center text-[10px] font-black shadow-sm">
+                                                        {member.user.first_name?.[0]?.toUpperCase() || member.user.username?.[0]?.toUpperCase() || '?'}
                                                     </div>
-                                                    <div>
-                                                        <p className="text-sm font-medium flex items-center gap-1.5">
-                                                            {member.user.email} {user?.id === member.user.id && <span className="text-[10px] text-gray-400 font-normal">(You)</span>}
+                                                    <div className="min-w-0">
+                                                        <p className="text-[11px] font-bold text-slate-900 truncate">
+                                                            {member.user.email}
                                                         </p>
-                                                        <span className="text-xs text-gray-500 capitalize flex items-center gap-1">
-                                                            {member.role === 'owner' ? <Shield className="w-3 h-3 text-amber-500" /> : <User className="w-3 h-3 text-gray-400" />}
-                                                            {member.role}
-                                                        </span>
+                                                        <div className="flex items-center gap-1 mt-0.5">
+                                                            {member.role === 'owner' ? <Shield className="w-2.5 h-2.5 text-blue-400" /> : <User className="w-2.5 h-2.5 text-slate-300" />}
+                                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{member.role}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 {isOwner && member.user.id !== user?.id && (
                                                     <button
                                                         onClick={() => {
-                                                            if (confirm(`Remove ${member.user.email} from ${team.name}?`)) {
-                                                                removeMember.mutate({ teamId: team.id, userId: member.user.id })
-                                                            }
+                                                            removeMember.mutate({ teamId: team.id, userId: member.user.id })
                                                         }}
-                                                        className="text-gray-400 hover:text-red-600 p-1"
-                                                        title="Remove member"
+                                                        className="text-slate-300 hover:text-rose-500 p-1 opacity-0 group-member/member:opacity-100 transition-opacity"
                                                     >
-                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                        <X className="w-3.5 h-3.5" />
                                                     </button>
                                                 )}
                                             </div>

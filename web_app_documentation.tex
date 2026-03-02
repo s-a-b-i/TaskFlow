@@ -1,0 +1,127 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{titlesec}
+
+% Define Colors based on App Design System
+\definecolor{primary}{HTML}{2563EB}
+\definecolor{background}{HTML}{F9FAFB}
+\definecolor{textmain}{HTML}{111827}
+\definecolor{emerald}{HTML}{059669}
+\definecolor{rose}{HTML}{DC2626}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    filecolor=magenta,      
+    urlcolor=primary,
+}
+
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{primary}}{\thesection}{1em}{}
+
+\title{
+    \vspace{-2cm}
+    \textbf{Team Task Manager}\\
+    \large{Comprehensive Technical Documentation}
+}
+\author{Antigravity AI Assistant}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+The \textbf{Team Task Manager} is a modern, full-stack web application designed for seamless team collaboration and task organization. It provides a robust platform for managing workspaces (Teams), tracking work items (Tasks), and maintaining real-time awareness through a sophisticated notification system.
+
+\section{Technical Stack}
+
+\subsection{Frontend Architecture}
+The frontend is built with a focus on performance, responsiveness, and premium aesthetics.
+\begin{itemize}
+    \item \textbf{Framework:} React (Vite-powered) for a fast development loop and optimized production builds.
+    \item \textbf{State Management:}
+    \begin{itemize}
+        \item \textbf{Zustand:} Lightweight global store for authentication and user session state.
+        \item \textbf{React Query (TanStack):} Powerful server-state management for caching, synchronization, and background refetching of API data.
+    \end{itemize}
+    \item \textbf{Styling:} \textbf{Tailwind CSS v4} for a utility-first, highly customizable design system.
+    \item \textbf{Icons:} \textbf{Lucide React} provides a consistent and modern iconography set.
+    \item \textbf{Utilities:} \texttt{date-fns} for complex date manipulation and \texttt{react-hot-toast} for interactive user feedback.
+\end{itemize}
+
+\subsection{Backend Architecture}
+The backend provides a secure and scalable API layer.
+\begin{itemize}
+    \item \textbf{Framework:} \textbf{Django 5.0} with \textbf{Django REST Framework (DRF)} for building RESTful endpoints.
+    \item \textbf{Database:} SQLite (Development) with support for production-grade relational databases.
+    \item \textbf{Authentication:} Session-based authentication using Django's secure built-in mechanisms.
+    \item \textbf{Timezone Management:} Configured to \texttt{Asia/Karachi} (UTC+5) to ensure local consistency for task deadlines.
+\end{itemize}
+
+\section{Design System and Aesthetics}
+
+\subsection{Color Palette}
+The application follows a clean, professional "Card-Based" design with a focused color palette:
+\begin{itemize}
+    \item \textbf{Primary:} \colorbox{primary}{\textcolor{white}{\#2563EB}} - Used for main actions, navigation, and focus states.
+    \item \textbf{Background:} \colorbox{background}{\#F9FAFB} - Provides a soft, light-gray foundation for high readability.
+    \item \textbf{Typography:} \textbf{Inter} font family for a modern, geometric, and legible appearance.
+\end{itemize}
+
+\subsection{UI Components}
+\begin{itemize}
+    \item \textbf{Glassmorphism:} Subtle backdrop blurs (10px) on modals and overlays for a premium feel.
+    \item \textbf{Interactive Badges:} Status and priority are color-coded (e.g., Rose for High Priority, Emerald for Completed).
+    \item \textbf{Micro-animations:} Hover transitions and scale effects (\texttt{active:scale-95}) enhance the tactile feel of the interface.
+\end{itemize}
+
+\section{Application Flow and Logic}
+
+\subsection{User Authentication}
+Users enter through a clean \textbf{Login/Register} flow. Upon successful authentication, a session is established, and the user is redirected to the Dashboard.
+
+\subsection{Dashboard Overview}
+The Dashboard serves as the command center, providing:
+\begin{itemize}
+    \item \textbf{Real-time Statistics:} Count of tasks across different statuses (To Do, In Progress, Done).
+    \item \textbf{Overdue Monitor:} Proactive identification of missed deadlines.
+    \item \textbf{Activity Summary:} Quick access to notifications and recent team assignments.
+\end{itemize}
+
+\subsection{Team Management}
+The "Teams" page allows users to:
+\begin{itemize}
+    \item Create workspaces and designate owners.
+    \item Manage memberships via email invites.
+    \item Role-based access control (RBAC) ensures only owners can delete teams or remove members.
+\end{itemize}
+
+\subsection{Task Control}
+Tasks are managed within the context of a team:
+\begin{itemize}
+    \item \textbf{Permissions:} Only the task \textbf{creator} can edit or delete a task, preventing unauthorized modifications.
+    \item \textbf{Filtering:} Advanced filtering by status, priority, teammate, and overdue status.
+    \item \textbf{Automatic Notifications:} The system generates alerts when a task is assigned or when it becomes overdue.
+\end{itemize}
+
+\section{Security Features}
+\begin{itemize}
+    \item \textbf{CSRF Protection:} Secure cross-site request forgery prevention handled by Django.
+    \item \textbf{Password Hashing:} Industry-standard PBKDF2/bcrypt hashing (Django defaults).
+    \item \textbf{Protected Routes:} React components are shielded by a \texttt{ProtectedRoute} wrapper, ensuring only authenticated users reach private pages.
+\end{itemize}
+
+\section{Conclusion}
+The Team Task Manager combines a high-performance backend with a premium React frontend to deliver a production-ready collaboration tool. Its focus on user experience, clear permission logic, and proactive notification system makes it a comprehensive solution for modern team workflows.
+
+\end{document}
