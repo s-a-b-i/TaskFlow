@@ -112,17 +112,23 @@ AUTH_PASSWORD_VALIDATORS = [
 # ─── Sessions ──────────────────────────────────────────────────────────────
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax' if DEBUG else 'None'
 SESSION_COOKIE_SECURE = not DEBUG   # HTTPS only in production
 SESSION_COOKIE_AGE = int(os.environ.get('SESSION_COOKIE_AGE', 86400))
 
 # ─── CSRF ──────────────────────────────────────────────────────────────────
 CSRF_COOKIE_HTTPONLY = False          # Frontend needs to read CSRF token
-CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax' if DEBUG else 'None'
 CSRF_COOKIE_SECURE = not DEBUG
 CSRF_TRUSTED_ORIGINS = os.environ.get(
     'CORS_ALLOWED_ORIGINS', 'http://localhost:5173'
 ).split(',')
+
+# Ensure origins have protocol (https://)
+CSRF_TRUSTED_ORIGINS = [
+    origin if origin.startswith('http') else f"https://{origin}"
+    for origin in CSRF_TRUSTED_ORIGINS
+]
 
 # ─── CORS ──────────────────────────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = os.environ.get(
