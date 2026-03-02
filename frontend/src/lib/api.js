@@ -7,7 +7,7 @@ import axios from 'axios'
  * - CSRF token is read from the csrftoken cookie and sent as X-CSRFToken header
  */
 const api = axios.create({
-    baseURL: '/api',
+    baseURL: import.meta.env.VITE_API_URL || '/api',
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
