@@ -24,6 +24,7 @@ from .serializers import (
     NotificationSerializer,
     RegisterSerializer,
     LoginSerializer,
+    AddMemberSerializer,
     RemoveMemberSerializer,
     TaskSerializer,
     TeamCreateSerializer,
