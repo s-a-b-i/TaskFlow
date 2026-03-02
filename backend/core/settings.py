@@ -66,26 +66,38 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 # ─── Database ──────────────────────────────────────────────────────────────
-DB_ENGINE = os.environ.get('DB_ENGINE', 'django.db.backends.sqlite3')
+import dj_database_url
 
-if DB_ENGINE == 'django.db.backends.sqlite3':
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+if DATABASE_URL:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / os.environ.get('DB_NAME', 'db.sqlite3'),
-        }
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
 else:
-    DATABASES = {
-        'default': {
-            'ENGINE': DB_ENGINE,
-            'NAME': os.environ.get('DB_NAME', 'taskmanager'),
-            'USER': os.environ.get('DB_USER', ''),
-            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-            'HOST': os.environ.get('DB_HOST', 'localhost'),
-            'PORT': os.environ.get('DB_PORT', '5432'),
+    DB_ENGINE = os.environ.get('DB_ENGINE', 'django.db.backends.sqlite3')
+    if DB_ENGINE == 'django.db.backends.sqlite3':
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / os.environ.get('DB_NAME', 'db.sqlite3'),
+            }
         }
-    }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': DB_ENGINE,
+                'NAME': os.environ.get('DB_NAME', 'taskmanager'),
+                'USER': os.environ.get('DB_USER', ''),
+                'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+                'HOST': os.environ.get('DB_HOST', 'localhost'),
+                'PORT': os.environ.get('DB_PORT', '5432'),
+            }
+        }
 
 # ─── Auth backend ──────────────────────────────────────────────────────────
 AUTH_USER_MODEL = 'api.User'

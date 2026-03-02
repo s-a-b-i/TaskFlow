@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: task-manager-backend
+    env: python
+    rootDirectory: backend
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input
+    startCommand: gunicorn core.wsgi:application
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: DJANGO_SETTINGS_MODULE
+        value: core.settings
+      - key: DATABASE_URL
+        fromDatabase:
+          name: task-flow-db
+          property: connectionString
+      # You'll need to add SECRET_KEY and others in the Render Dashboard
