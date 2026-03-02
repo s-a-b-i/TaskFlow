@@ -34,9 +34,35 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (response) => response,
     (error) => {
+        // SMART Handle 403 Session Expiry
+        // Only redirect if it's an authentication issue, NOT a permission issue
         if (error.response?.status === 403 && !window.location.pathname.startsWith('/login')) {
-            window.location.href = '/login'
+            const code = error.response?.data?.code
+            if (code === 'not_authenticated' || code === 'authentication_failed') {
+                window.location.href = '/login'
+            }
         }
+
+        // Format error for UI components
+        const backendError = error.response?.data?.detail
+        let message = 'Something went wrong. Please try again.'
+
+        if (typeof backendError === 'string') {
+            message = backendError
+        } else if (typeof backendError === 'object' && backendError !== null) {
+            // Always preserve the full object for field-level mapping
+            error.fieldErrors = backendError
+
+            // Try to find a primary message for the summary/toast
+            const primaryError = backendError.non_field_errors || backendError.detail
+            if (primaryError) {
+                message = Array.isArray(primaryError) ? primaryError[0] : String(primaryError)
+            } else {
+                message = 'Please check the highlighted fields.'
+            }
+        }
+
+        error.displayMessage = message
         return Promise.reject(error)
     },
 )

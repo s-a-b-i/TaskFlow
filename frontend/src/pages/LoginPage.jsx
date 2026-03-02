@@ -34,12 +34,7 @@ export default function LoginPage() {
             toast.success('Welcome back!')
             navigate('/')
         } catch (err) {
-            const detail = err.response?.data?.detail
-            if (typeof detail === 'string') {
-                setError('root', { message: detail })
-            } else {
-                setError('root', { message: 'Login failed. Please try again.' })
-            }
+            setError('root', { message: err.displayMessage })
         } finally {
             setIsLoading(false)
         }

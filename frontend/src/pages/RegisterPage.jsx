@@ -43,14 +43,13 @@ export default function RegisterPage() {
             toast.success('Account created! Welcome to TaskFlow 🎉')
             navigate('/')
         } catch (err) {
-            const detail = err.response?.data?.detail
-            if (typeof detail === 'object' && detail !== null) {
-                Object.entries(detail).forEach(([field, msg]) => {
+            if (err.fieldErrors) {
+                Object.entries(err.fieldErrors).forEach(([field, msg]) => {
                     const message = Array.isArray(msg) ? msg[0] : String(msg)
                     setError(field, { message })
                 })
             } else {
-                setError('root', { message: String(detail) || 'Registration failed.' })
+                setError('root', { message: err.displayMessage })
             }
         } finally {
             setIsLoading(false)

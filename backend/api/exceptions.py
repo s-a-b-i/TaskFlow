@@ -8,21 +8,27 @@ from rest_framework.response import Response
 
 def custom_exception_handler(exc, context):
     """
-    Wrap DRF's default exception handler to return a standardized
-    { "error": "...", "detail": ... } structure.
+    Standardize DRF exception responses.
+    Returns: { "error": True, "status_code": 400, "detail": ... }
+    'detail' can be a string, a list of strings, or an object (for field validation).
     """
     response = exception_handler(exc, context)
 
     if response is not None:
-        error_detail = response.data
-        # Flatten single-key dict {"detail": "..."} for convenience
-        if isinstance(error_detail, dict) and list(error_detail.keys()) == ['detail']:
-            error_detail = str(error_detail['detail'])
+        # Extract code if available (DRF adds .code to detail items)
+        code = 'error'
+        if hasattr(exc, 'detail'):
+            if isinstance(exc.detail, dict):
+                # If it's a dict, we might just take the first code or 'validation_error'
+                code = 'validation_error'
+            elif hasattr(exc.detail, 'code'):
+                code = exc.detail.code
 
         response.data = {
             'error': True,
             'status_code': response.status_code,
-            'detail': error_detail,
+            'code': code,
+            'detail': response.data
         }
 
     return response

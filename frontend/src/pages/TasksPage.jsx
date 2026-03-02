@@ -44,7 +44,7 @@ export default function TasksPage() {
     const updateStatus = useMutation({
         mutationFn: ({ id, status }) => api.patch(`/tasks/${id}/`, { status }),
         onSuccess: async () => await queryClient.invalidateQueries({ queryKey: ['tasks'] }),
-        onError: () => toast.error('Failed to update task')
+        onError: (err) => toast.error(err.displayMessage)
     })
 
     const deleteTask = useMutation({
@@ -53,7 +53,7 @@ export default function TasksPage() {
             await queryClient.invalidateQueries({ queryKey: ['tasks'] })
             toast.success('Task deleted')
         },
-        onError: (e) => toast.error(e.response?.data?.detail || 'Failed to delete task (only creators or team owners can do this)')
+        onError: (err) => toast.error(err.displayMessage)
     })
 
     const updateFilter = (k, v) => {

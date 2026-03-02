@@ -20,7 +20,16 @@ function TeamModal({ team, onClose }) {
             toast.success(team ? 'Team updated' : 'Team created')
             onClose()
         },
-        onError: () => toast.error('Failed to save team')
+        onError: (err) => {
+            if (err.fieldErrors) {
+                Object.entries(err.fieldErrors).forEach(([field, msg]) => {
+                    const message = Array.isArray(msg) ? msg[0] : String(msg)
+                    setError(field, { message })
+                })
+            } else {
+                toast.error(err.displayMessage)
+            }
+        }
     })
 
     return (
@@ -61,15 +70,11 @@ function MemberModal({ team, onClose }) {
             onClose()
         },
         onError: (err) => {
-            const data = err.response?.data || {}
-            // Handle { detail: "string" } or { detail: { email: ["..."] } } or { email: ["..."] }
-            const msg =
-                (typeof data.detail === 'string' && data.detail) ||
-                data.detail?.email?.[0] ||
-                data.email?.[0] ||
-                'Failed to add member'
-
-            toast.error(msg)
+            if (err.fieldErrors?.email) {
+                setError('email', { message: err.fieldErrors.email[0] })
+            } else {
+                toast.error(err.displayMessage)
+            }
         }
     })
 
@@ -119,7 +124,7 @@ export default function TeamsPage() {
             await queryClient.invalidateQueries({ queryKey: ['teams'] })
             toast.success('Workspace deleted')
         },
-        onError: () => toast.error('You do not have permission to delete this workspace')
+        onError: (err) => toast.error(err.displayMessage)
     })
 
     const removeMember = useMutation({
@@ -128,7 +133,7 @@ export default function TeamsPage() {
             await queryClient.invalidateQueries({ queryKey: ['teams'] })
             toast.success('Member removed')
         },
-        onError: (e) => toast.error(e.response?.data?.detail || 'Failed to remove member')
+        onError: (err) => toast.error(err.displayMessage)
     })
 
     if (isLoading) return <div className="p-8 animate-pulse bg-gray-200 h-screen rounded -ml-6 -mt-6" />

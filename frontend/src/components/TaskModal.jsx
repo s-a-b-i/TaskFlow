@@ -46,8 +46,14 @@ export default function TaskModal({ task, teams, onClose }) {
             onClose()
         },
         onError: (err) => {
-            console.error(err)
-            toast.error(err.response?.data?.detail || 'Failed to save task')
+            if (err.fieldErrors) {
+                Object.entries(err.fieldErrors).forEach(([field, msg]) => {
+                    const message = Array.isArray(msg) ? msg[0] : String(msg)
+                    setError(field, { message })
+                })
+            } else {
+                toast.error(err.displayMessage)
+            }
         }
     })
 
