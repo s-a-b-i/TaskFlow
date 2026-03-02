@@ -15,7 +15,11 @@ const api = axios.create({
 })
 
 /** Read the CSRF token from the browser cookie set by Django. */
+let manualCsrfToken = null
+export const setManualCsrfToken = (token) => { manualCsrfToken = token }
+
 function getCsrfToken() {
+    if (manualCsrfToken) return manualCsrfToken
     const match = document.cookie.match(/csrftoken=([^;]+)/)
     return match ? match[1] : null
 }

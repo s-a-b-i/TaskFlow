@@ -9,6 +9,7 @@ Sections:
 """
 
 from django.contrib.auth import login, logout
+from django.middleware.csrf import get_token
 from django.db import models as db_models
 from django.utils import timezone
 from rest_framework import status, viewsets
@@ -51,6 +52,7 @@ class RegisterView(APIView):
             {
                 'message': 'Registration successful.',
                 'user': UserPublicSerializer(user).data,
+                'csrf_token': get_token(request),
             },
             status=status.HTTP_201_CREATED,
         )
@@ -78,6 +80,7 @@ class LoginView(APIView):
             {
                 'message': 'Login successful.',
                 'user': UserPublicSerializer(user).data,
+                'csrf_token': get_token(request),
             },
             status=status.HTTP_200_OK,
         )
@@ -105,7 +108,10 @@ class CurrentUserView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        return Response(UserPublicSerializer(request.user).data)
+        return Response({
+            **UserPublicSerializer(request.user).data,
+            'csrf_token': get_token(request)
+        })
 
 
 # ════════════════════════════════════════════════════════════

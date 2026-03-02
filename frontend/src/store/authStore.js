@@ -14,7 +14,12 @@ export const useAuthStore = create((set, get) => ({
     init: async () => {
         try {
             const { data } = await api.get('/auth/me/')
-            set({ user: data, isAuthenticated: true, isLoading: false })
+            const { csrf_token, ...user } = data
+            if (csrf_token) {
+                const { setManualCsrfToken } = await import('../lib/api')
+                setManualCsrfToken(csrf_token)
+            }
+            set({ user, isAuthenticated: true, isLoading: false })
         } catch {
             set({ user: null, isAuthenticated: false, isLoading: false })
         }
