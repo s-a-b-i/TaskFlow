@@ -2,7 +2,7 @@ services:
   - type: web
     name: task-manager-backend
     env: python
-    rootDirectory: backend
+    rootDir: backend
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input
     startCommand: gunicorn core.wsgi:application
     envVars:
