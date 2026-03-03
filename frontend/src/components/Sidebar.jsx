@@ -37,8 +37,8 @@ export default function Sidebar({ isCollapsed, isMobileOpen, onClose }) {
             {/* Brand */}
             <div className={`p-4 h-16 flex items-center border-b border-slate-100 ${isCollapsed ? 'lg:justify-center' : 'px-6'}`}>
                 <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center shadow-sm shadow-primary/20 flex-shrink-0">
-                        <CheckSquare className="w-5 h-5 text-white" />
+                    <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm border border-slate-100 p-1 flex-shrink-0 group-hover:scale-105 transition-transform">
+                        <img src="/logo.png" alt="TaskFlow Logo" className="w-full h-full object-contain" />
                     </div>
                     {(!isCollapsed || isMobileOpen) && (
                         <div>

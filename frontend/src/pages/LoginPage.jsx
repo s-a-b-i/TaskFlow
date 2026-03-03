@@ -48,8 +48,8 @@ export default function LoginPage() {
         <div className="min-h-screen bg-background flex flex-col justify-center py-12 px-6 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="flex justify-center mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                        <CheckSquare className="w-7 h-7 text-white" />
+                    <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-xl shadow-slate-200/50 border border-slate-100 p-2 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <img src="/logo.png" alt="TaskFlow" className="w-full h-full object-contain" />
                     </div>
                 </div>
                 <h2 className="text-center text-3xl font-black text-slate-900 tracking-tight">
