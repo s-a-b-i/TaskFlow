@@ -143,9 +143,16 @@ export default function TeamsPage() {
             api.post(`/teams/${teamId}/remove_member/`, { user_id: userId, force }),
         onSuccess: async (res, variables) => {
             if (res.data.warning === 'user_has_tasks') {
-                if (confirm(`${res.data.detail} This will unassign the member from these tasks. Proceed?`)) {
-                    removeMember.mutate({ ...variables, force: true })
-                }
+                toast((t) => (
+                    <div className="flex flex-col gap-2">
+                        <p className="text-sm font-bold">Member has active tasks</p>
+                        <p className="text-xs text-slate-500">{res.data.detail}</p>
+                        <div className="flex gap-2 mt-1">
+                            <button onClick={() => { toast.dismiss(t.id); removeMember.mutate({ ...variables, force: true }) }} className="px-3 py-1.5 bg-rose-600 text-white text-xs font-bold rounded-lg">Remove Anyway</button>
+                            <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg">Cancel</button>
+                        </div>
+                    </div>
+                ), { duration: 10000, style: { background: 'white', color: '#111827' } })
             } else {
                 await queryClient.invalidateQueries({ queryKey: ['teams'] })
                 toast.success('Member removed')
@@ -202,17 +209,24 @@ export default function TeamsPage() {
                                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-4">Created: {format(new Date(team.created_at), 'MMM yyyy')}</p>
                                     </div>
                                     {isOwner && (
-                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => { setActiveTeam(team); setModalType('team'); }} className="p-2 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-colors">
+                                        <div className="flex items-center gap-1">
+                                            <button onClick={() => { setActiveTeam(team); setModalType('team'); }} className="p-2 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-colors" title="Edit Team">
                                                 <Edit2 className="w-3.5 h-3.5" />
                                             </button>
                                             <button
                                                 onClick={() => {
-                                                    if (confirm(`Delete team "${team.name}"?`)) {
-                                                        deleteTeam.mutate(team.id)
-                                                    }
+                                                    toast((t) => (
+                                                        <div className="flex flex-col gap-2">
+                                                            <p className="text-sm font-bold">Delete "{team.name}"?</p>
+                                                            <p className="text-xs text-slate-500">This cannot be undone.</p>
+                                                            <div className="flex gap-2 mt-1">
+                                                                <button onClick={() => { toast.dismiss(t.id); deleteTeam.mutate(team.id) }} className="px-3 py-1.5 bg-rose-600 text-white text-xs font-bold rounded-lg">Delete</button>
+                                                                <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg">Cancel</button>
+                                                            </div>
+                                                        </div>
+                                                    ), { duration: 8000, style: { background: 'white', color: '#111827' } })
                                                 }}
-                                                className="p-2 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-colors"
+                                                className="p-2 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-colors" title="Delete Team"
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />
                                             </button>

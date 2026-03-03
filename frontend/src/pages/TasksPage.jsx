@@ -65,18 +65,19 @@ export default function TasksPage() {
 
     const resetFilters = () => setSearchParams(new URLSearchParams())
 
-    if (isLoading) return <div className="p-8 animate-pulse bg-gray-200 h-screen rounded -ml-6 -mt-6" />
+    if (isLoading) return <div className="p-8 animate-pulse bg-slate-50 h-screen rounded-xl" />
+
 
     return (
         <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold flex items-center gap-2">
-                        <CheckSquare className="w-6 h-6 text-green-600" />
+                    <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                        <CheckSquare className="w-6 h-6 text-primary" />
                         All Tasks
                     </h1>
-                    <p className="text-gray-500 text-sm mt-1">Manage and track your team's work</p>
+                    <p className="text-slate-500 text-sm font-medium mt-1">Manage and track your team's work</p>
                 </div>
                 <button
                     onClick={() => { setActiveTask(null); setIsModalOpen(true); }}
@@ -163,18 +164,22 @@ export default function TasksPage() {
                             </div>
 
                             <div className="flex flex-col gap-4 min-h-[200px]">
+                                {columnTasks.length === 0 && (
+                                    <div className="flex flex-col items-center justify-center py-10 rounded-xl border border-dashed border-slate-200 text-center">
+                                        <CheckSquare className="w-6 h-6 text-slate-200 mx-auto mb-2" />
+                                        <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">No tasks here</p>
+                                    </div>
+                                )}
                                 {columnTasks.map(task => (
                                     <div key={task.id} className="card p-5 group hover:border-blue-300 transition-colors">
                                         <div className="flex justify-between items-start mb-3">
                                             <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">{task.team_name}</span>
                                             {user?.id === task.created_by?.id && (
                                                 <div className="flex gap-1 transition-opacity">
-                                                    <button onClick={() => { setActiveTask(task); setIsModalOpen(true); }} className="p-1.5 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-colors">
+                                                    <button onClick={() => { setActiveTask(task); setIsModalOpen(true); }} className="p-1.5 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-colors" title="Edit">
                                                         <Edit2 className="w-3.5 h-3.5" />
                                                     </button>
-                                                    <button onClick={() => {
-                                                        if (confirm('Delete this task?')) deleteTask.mutate(task.id)
-                                                    }} className="p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-colors">
+                                                    <button onClick={() => deleteTask.mutate(task.id)} className="p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-colors" title="Delete">
                                                         <Trash2 className="w-3.5 h-3.5" />
                                                     </button>
                                                 </div>
