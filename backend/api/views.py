@@ -242,7 +242,7 @@ class TeamViewSet(viewsets.ModelViewSet):
             )
 
         # Check for assigned tasks
-        assigned_tasks_count = Task.objects.filter(team=team, assigned_to_id=user_id).count()
+        assigned_tasks_count = Task.objects.filter(team=team, assigned_to=user_id).count()
 
         if assigned_tasks_count > 0 and not force:
             return Response(
@@ -254,8 +254,10 @@ class TeamViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_200_OK,  # Return 200 so frontend can handle the warning gracefully
             )
 
-        # Unassign tasks first (SET_NULL would handle this if user was deleted, but here it's team removal)
-        Task.objects.filter(team=team, assigned_to_id=user_id).update(assigned_to=None)
+        # Unassign tasks first
+        tasks_to_unassign = Task.objects.filter(team=team, assigned_to=user_id)
+        for task in tasks_to_unassign:
+            task.assigned_to.remove(user_id)
 
         deleted, _ = TeamMembership.objects.filter(team=team, user_id=user_id).delete()
         if deleted == 0:
