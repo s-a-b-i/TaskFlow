@@ -173,7 +173,7 @@ class TaskTests(TestCase):
             'team': self.team.id,
         }
         if assigned_to_id:
-            payload['assigned_to_id'] = assigned_to_id
+            payload['assigned_to_ids'] = [assigned_to_id]
         return self.client.post('/api/tasks/', payload, format='json')
 
     def test_create_task_succeeds(self):

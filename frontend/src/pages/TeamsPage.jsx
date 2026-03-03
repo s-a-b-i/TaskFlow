@@ -253,7 +253,7 @@ export default function TeamsPage() {
                                                         onClick={() => {
                                                             removeMember.mutate({ teamId: team.id, userId: member.user.id })
                                                         }}
-                                                        className="text-slate-300 hover:text-rose-500 p-1 opacity-0 group-member/member:opacity-100 transition-opacity"
+                                                        className="text-slate-300 hover:text-rose-500 p-1"
                                                     >
                                                         <X className="w-3.5 h-3.5" />
                                                     </button>

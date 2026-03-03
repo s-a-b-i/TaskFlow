@@ -165,11 +165,11 @@ class TaskSerializer(serializers.ModelSerializer):
     """Full task representation with nested user info."""
 
     created_by = UserPublicSerializer(read_only=True)
-    assigned_to = UserPublicSerializer(read_only=True)
-    assigned_to_id = serializers.PrimaryKeyRelatedField(
+    assigned_to = UserPublicSerializer(many=True, read_only=True)
+    assigned_to_ids = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
         source='assigned_to',
-        allow_null=True,
+        many=True,
         required=False,
         write_only=True,
     )
@@ -180,7 +180,7 @@ class TaskSerializer(serializers.ModelSerializer):
         model = Task
         fields = [
             'id', 'title', 'description', 'status', 'priority', 'due_date',
-            'team', 'team_name', 'assigned_to', 'assigned_to_id',
+            'team', 'team_name', 'assigned_to', 'assigned_to_ids',
             'created_by', 'is_overdue', 'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_by', 'created_at', 'updated_at']
@@ -206,15 +206,16 @@ class TaskSerializer(serializers.ModelSerializer):
                     {'team': 'You must be a member of this team to create tasks here.'}
                 )
 
-        # Ensure the assigned user is a member of the team
-        assigned_to = attrs.get('assigned_to')
-        if assigned_to and team:
-            is_member = TeamMembership.objects.filter(
-                team=team, user=assigned_to
-            ).exists()
-            if not is_member:
-                raise serializers.ValidationError(
-                    {'assigned_to_id': 'Assignee must be a member of the team.'}
-                )
+        # Ensure all assigned users are members of the team
+        assigned_to_list = attrs.get('assigned_to', [])
+        if assigned_to_list and team:
+            member_ids = set(
+                TeamMembership.objects.filter(team=team).values_list('user_id', flat=True)
+            )
+            for user in assigned_to_list:
+                if user.id not in member_ids:
+                    raise serializers.ValidationError(
+                        {'assigned_to_ids': f'User {user.email} must be a member of the team.'}
+                    )
 
         return attrs

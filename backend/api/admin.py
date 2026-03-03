@@ -42,7 +42,7 @@ class TeamMembershipAdmin(admin.ModelAdmin):
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ['title', 'team', 'assigned_to', 'status', 'priority', 'due_date', 'created_at']
+    list_display = ['title', 'team', 'status', 'priority', 'due_date', 'created_at']
     list_filter = ['status', 'priority', 'team']
     search_fields = ['title', 'description', 'assigned_to__email']
     date_hierarchy = 'created_at'

@@ -108,10 +108,8 @@ class Task(models.Model):
         on_delete=models.CASCADE,
         related_name='tasks',
     )
-    assigned_to = models.ForeignKey(
+    assigned_to = models.ManyToManyField(
         User,
-        on_delete=models.SET_NULL,
-        null=True,
         blank=True,
         related_name='assigned_tasks',
     )
@@ -129,7 +127,6 @@ class Task(models.Model):
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['team', 'status']),
-            models.Index(fields=['assigned_to']),
         ]
 
     def __str__(self):

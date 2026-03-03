@@ -196,8 +196,22 @@ export default function TasksPage() {
                                                 </span>
                                             )}
 
-                                            <div className="ml-auto w-6 h-6 rounded-full bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center text-[10px] font-bold" title={task.assigned_to?.email || 'Unassigned'}>
-                                                {task.assigned_to ? (task.assigned_to.first_name?.[0] || '?') : '?'}
+                                            <div className="ml-auto flex -space-x-2">
+                                                {task.assigned_to && task.assigned_to.length > 0 ? (
+                                                    task.assigned_to.map(assignee => (
+                                                        <div
+                                                            key={assignee.id}
+                                                            className="w-6 h-6 rounded-full bg-white border border-slate-200 text-slate-600 flex items-center justify-center text-[8px] font-bold shadow-sm"
+                                                            title={assignee.email}
+                                                        >
+                                                            {assignee.first_name?.[0] || assignee.username?.[0] || '?'}
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="w-6 h-6 rounded-full bg-slate-50 border border-slate-100 text-slate-300 flex items-center justify-center text-[10px] font-bold" title="Unassigned">
+                                                        ?
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
 

@@ -301,7 +301,9 @@ class TaskViewSet(viewsets.ModelViewSet):
         qs = Task.objects.filter(
             team__memberships__user=user
         ).select_related(
-            'team', 'assigned_to', 'created_by'
+            'team', 'created_by'
+        ).prefetch_related(
+            'assigned_to'
         ).distinct()
 
         params = self.request.query_params
@@ -314,7 +316,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         # Filter by assignee
         assigned_to = params.get('assigned_to')
         if assigned_to:
-            qs = qs.filter(assigned_to_id=assigned_to)
+            qs = qs.filter(assigned_to__id=assigned_to)
 
         # Filter by status
         task_status = params.get('status')
@@ -414,12 +416,11 @@ class DashboardView(APIView):
         due_today = user_tasks.filter(due_date=today).exclude(status='done')
 
         for task in overdue_tasks:
-            # Ensure the assignee gets a notification if it's the first time they're seeing it today
-            if task.assigned_to:
+            # Notify ALL assigned users
+            for assigned_user in task.assigned_to.all():
                 # Check for existing notification for this task and user TODAY
-                # We use title matching as a simple check for now
                 existing = Notification.objects.filter(
-                    user=task.assigned_to,
+                    user=assigned_user,
                     type='overdue_task',
                     title__icontains=task.title,
                 ).order_by('-created_at').first()
@@ -427,14 +428,13 @@ class DashboardView(APIView):
                 # Notify once per day if still overdue
                 should_notify = True
                 if existing:
-                    # If already notified today (local time), skip
                     existing_local = timezone.localtime(existing.created_at).date()
                     if existing_local == today:
                         should_notify = False
 
                 if should_notify:
                     Notification.objects.create(
-                        user=task.assigned_to,
+                        user=assigned_user,
                         title=f"Overdue: {task.title}",
                         message=f"The task '{task.title}' was due on {task.due_date}.",
                         type='overdue_task'

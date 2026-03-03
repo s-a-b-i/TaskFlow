@@ -8,21 +8,23 @@ export default function TaskModal({ task, teams, onClose }) {
     const queryClient = useQueryClient()
     const isEditing = !!task
 
-    const { register, handleSubmit, watch, formState: { errors } } = useForm({
+    const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
         defaultValues: task ? {
             title: task.title,
             description: task.description,
             status: task.status,
             priority: task.priority,
             team: task.team,
-            assigned_to_id: task.assigned_to?.id || '',
+            assigned_to_ids: task.assigned_to?.map(u => u.id) || [],
             due_date: task.due_date || '',
         } : {
-            title: '', description: '', status: 'todo', priority: 'medium', team: teams[0]?.id || '', assigned_to_id: '', due_date: ''
+            title: '', description: '', status: 'todo', priority: 'medium', team: teams[0]?.id || '', assigned_to_ids: [], due_date: ''
         }
     })
 
-    // Watch selected team to fetch its members for the assignee dropdown
+    const selectedAssignees = watch('assigned_to_ids') || []
+
+    // Watch selected team to fetch its members for the assignee list
     const selectedTeamId = watch('team')
     const { data: members = [] } = useQuery({
         queryKey: ['team-members', selectedTeamId],
@@ -32,9 +34,7 @@ export default function TaskModal({ task, teams, onClose }) {
 
     const mutation = useMutation({
         mutationFn: (data) => {
-            // Clean up empty strings for null-able fields
             const payload = { ...data }
-            if (!payload.assigned_to_id) payload.assigned_to_id = null
             if (!payload.due_date) payload.due_date = null
 
             return isEditing
@@ -96,14 +96,36 @@ export default function TaskModal({ task, teams, onClose }) {
                             </select>
                         </div>
 
-                        <div>
-                            <label className="label">Assigned To</label>
-                            <select className="input h-11 font-bold" {...register('assigned_to_id')}>
-                                <option value="">Select member</option>
+                        <div className="col-span-full">
+                            <label className="label">Assign To</label>
+                            <div className="grid grid-cols-1 gap-2 mt-2 p-3 bg-slate-50 border border-slate-100 rounded-lg max-h-40 overflow-y-auto">
+                                {members.length === 0 && <p className="text-[10px] text-slate-400 font-bold italic">No members in this team</p>}
                                 {members.map(m => (
-                                    <option key={m.user.id} value={m.user.id}>{m.user.email}</option>
+                                    <label key={m.user.id} className="flex items-center gap-3 cursor-pointer group hover:bg-white p-1 rounded transition-colors">
+                                        <input
+                                            type="checkbox"
+                                            value={m.user.id}
+                                            checked={selectedAssignees.includes(m.user.id)}
+                                            onChange={(e) => {
+                                                const userId = m.user.id
+                                                if (e.target.checked) {
+                                                    setValue('assigned_to_ids', [...selectedAssignees, userId])
+                                                } else {
+                                                    setValue('assigned_to_ids', selectedAssignees.filter(id => id !== userId))
+                                                }
+                                            }}
+                                            className="w-3.5 h-3.5 rounded border-slate-300 text-primary focus:ring-primary/20"
+                                        />
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-bold text-slate-900 leading-none group-hover:text-primary transition-colors">
+                                                {m.user.first_name ? `${m.user.first_name} ${m.user.last_name}` : m.user.username}
+                                            </span>
+                                            <span className="text-[9px] text-slate-400 font-medium">{m.user.email}</span>
+                                        </div>
+                                    </label>
                                 ))}
-                            </select>
+                            </div>
+                            {errors.assigned_to_ids && <p className="text-[10px] font-bold text-rose-500 mt-1.5 uppercase tracking-widest">{errors.assigned_to_ids.message}</p>}
                         </div>
 
                         <div>
