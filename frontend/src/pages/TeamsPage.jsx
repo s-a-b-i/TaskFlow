@@ -70,7 +70,12 @@ function MemberModal({ team, onClose }) {
     const mutation = useMutation({
         mutationFn: (data) => api.post(`/teams/${team.id}/add_member/`, data),
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ['teams'] })
+            // Invalidate both the teams list AND the specific team-members cache
+            // so the TaskModal immediately sees the new member without page refresh
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ['teams'] }),
+                queryClient.invalidateQueries({ queryKey: ['team-members', team.id] }),
+            ])
             toast.success('Member added')
             onClose()
         },
@@ -154,7 +159,10 @@ export default function TeamsPage() {
                     </div>
                 ), { duration: 10000, style: { background: 'white', color: '#111827' } })
             } else {
-                await queryClient.invalidateQueries({ queryKey: ['teams'] })
+                await Promise.all([
+                    queryClient.invalidateQueries({ queryKey: ['teams'] }),
+                    queryClient.invalidateQueries({ queryKey: ['team-members', variables.teamId] }),
+                ])
                 toast.success('Member removed')
             }
         },
