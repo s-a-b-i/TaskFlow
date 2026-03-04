@@ -94,7 +94,7 @@ function MemberModal({ team, onClose }) {
 
     return (
         <div className="fixed inset-0 bg-slate-900/10 backdrop-blur-[2px] z-50 flex items-center justify-center p-6" onClick={onClose}>
-            <div className="card w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+            <div className="card w-full max-w-sm animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
                 <div className="p-6 border-b border-slate-100 flex items-center justify-between">
                     <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest">Add Member</h2>
                     <button onClick={onClose} className="p-1 hover:bg-slate-100 text-slate-400 rounded-lg transition-colors">
@@ -127,7 +127,7 @@ function MemberModal({ team, onClose }) {
 
                             {/* Dropdown Menu */}
                             {isDropdownOpen && (
-                                <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl shadow-slate-200/50 max-h-48 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="absolute z-[100] w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl shadow-slate-200/50 max-h-48 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
                                     {isUsersLoading ? (
                                         <div className="p-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Loading...</div>
                                     ) : users.length === 0 ? (
