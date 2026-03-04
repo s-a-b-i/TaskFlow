@@ -12,15 +12,17 @@ export const useAuthStore = create((set, get) => ({
 
     /** Called on app boot to check if an existing session is valid. */
     init: async () => {
+        const token = localStorage.getItem('auth_token')
+        if (!token) {
+            set({ user: null, isAuthenticated: false, isLoading: false })
+            return
+        }
+
         try {
             const { data } = await api.get('/auth/me/')
-            const { csrf_token, ...user } = data
-            if (csrf_token) {
-                const { setManualCsrfToken } = await import('../lib/api')
-                setManualCsrfToken(csrf_token)
-            }
-            set({ user, isAuthenticated: true, isLoading: false })
+            set({ user: data, isAuthenticated: true, isLoading: false })
         } catch {
+            localStorage.removeItem('auth_token')
             set({ user: null, isAuthenticated: false, isLoading: false })
         }
     },
@@ -29,5 +31,8 @@ export const useAuthStore = create((set, get) => ({
     setUser: (user) => set({ user, isAuthenticated: true }),
 
     /** Clear auth state after logout. */
-    clearUser: () => set({ user: null, isAuthenticated: false }),
+    clearUser: () => {
+        localStorage.removeItem('auth_token')
+        set({ user: null, isAuthenticated: false })
+    },
 }))

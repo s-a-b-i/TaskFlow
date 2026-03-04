@@ -16,23 +16,15 @@ const api = axios.create({
     },
 })
 
-/** Read the CSRF token from the browser cookie set by Django. */
-let manualCsrfToken = null
-export const setManualCsrfToken = (token) => { manualCsrfToken = token }
-
-function getCsrfToken() {
-    if (manualCsrfToken) return manualCsrfToken
-    const match = document.cookie.match(/csrftoken=([^;]+)/)
-    return match ? match[1] : null
-}
-
-// Attach CSRF token to all mutating requests
+// Attach Auth Token to all requests
 api.interceptors.request.use((config) => {
-    const method = config.method?.toUpperCase()
-    if (method && !['GET', 'HEAD', 'OPTIONS', 'TRACE'].includes(method)) {
-        const token = getCsrfToken()
-        if (token) config.headers['X-CSRFToken'] = token
+    const token = localStorage.getItem('auth_token')
+    if (token) {
+        config.headers['Authorization'] = `Token ${token}`
     }
+
+    // CSRF logic is only needed for SessionAuthentication
+    // TokenAuthentication bypasses CSRF checks in DRF
     return config
 })
 

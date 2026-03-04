@@ -38,11 +38,8 @@ export default function RegisterPage() {
         setIsLoading(true)
         try {
             const response = await api.post('/auth/register/', data)
-            const { csrf_token, user } = response.data
-            if (csrf_token) {
-                const { setManualCsrfToken } = await import('../lib/api')
-                setManualCsrfToken(csrf_token)
-            }
+            const { token, user } = response.data
+            localStorage.setItem('auth_token', token)
             setUser(user)
             toast.success('Account created! Welcome to TaskFlow 🎉')
             navigate('/')

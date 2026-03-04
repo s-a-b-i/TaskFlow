@@ -11,6 +11,7 @@ Sections:
 from django.contrib.auth import login, logout
 from django.middleware.csrf import get_token
 from django.db import models as db_models
+from rest_framework.authtoken.models import Token
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -48,11 +49,13 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        token, _ = Token.objects.get_or_create(user=user)
         login(request, user)
         return Response(
             {
                 'message': 'Registration successful.',
                 'user': UserPublicSerializer(user).data,
+                'token': token.key,
                 'csrf_token': get_token(request),
             },
             status=status.HTTP_201_CREATED,
@@ -76,11 +79,13 @@ class LoginView(APIView):
         serializer = LoginSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
+        token, _ = Token.objects.get_or_create(user=user)
         login(request, user)
         return Response(
             {
                 'message': 'Login successful.',
                 'user': UserPublicSerializer(user).data,
+                'token': token.key,
                 'csrf_token': get_token(request),
             },
             status=status.HTTP_200_OK,

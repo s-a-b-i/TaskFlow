@@ -29,11 +29,8 @@ export default function LoginPage() {
         setIsLoading(true)
         try {
             const response = await api.post('/auth/login/', data)
-            const { csrf_token, user } = response.data
-            if (csrf_token) {
-                const { setManualCsrfToken } = await import('../lib/api')
-                setManualCsrfToken(csrf_token)
-            }
+            const { token, user } = response.data
+            localStorage.setItem('auth_token', token)
             window.sessionStorage.setItem('last_login_time', Date.now().toString())
             setUser(user)
             toast.success('Welcome back!')

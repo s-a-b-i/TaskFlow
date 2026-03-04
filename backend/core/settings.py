@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'corsheaders',
     # Local
     'api',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -154,6 +155,7 @@ CSRF_TRUSTED_ORIGINS = list(CORS_ALLOWED_ORIGINS)
 # ─── Django REST Framework ─────────────────────────────────────────────────
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
