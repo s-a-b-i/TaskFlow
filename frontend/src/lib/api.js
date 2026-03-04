@@ -9,7 +9,7 @@ const sessionStore = window.sessionStorage
  * - CSRF token is read from the csrftoken cookie and sent as X-CSRFToken header
  */
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || '/api',
+    baseURL: import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '/api',
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json',

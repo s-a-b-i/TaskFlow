@@ -23,7 +23,12 @@ if not SECRET_KEY:
         raise ValueError("SECRET_KEY environment variable must be set in production.")
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com').split(',')
+
+# ─── SSL & Proxy Settings ──────────────────────────────────────────────────
+# Allow Django to recognize HTTPS through Render/Load Balancer proxies
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False') == 'True' if DEBUG else True
 
 # ─── Application definition ────────────────────────────────────────────────
 INSTALLED_APPS = [
