@@ -44,13 +44,13 @@ class RegisterView(APIView):
     Creates a new user account and establishes a session.
     """
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         token, _ = Token.objects.get_or_create(user=user)
-        login(request, user)
         return Response(
             {
                 'message': 'Registration successful.',
@@ -68,6 +68,7 @@ class LoginView(APIView):
     Authenticates credentials and establishes a session cookie.
     """
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         # Do not re-login if already authenticated
@@ -80,7 +81,6 @@ class LoginView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         token, _ = Token.objects.get_or_create(user=user)
-        login(request, user)
         return Response(
             {
                 'message': 'Login successful.',
