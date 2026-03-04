@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Users, UserPlus, Trash2, Edit2, Shield, User, X } from 'lucide-react'
+import { Plus, Users, UserPlus, Trash2, Edit2, Shield, User, X, Search, Check } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import api from '../lib/api'
@@ -65,13 +65,21 @@ function TeamModal({ team, onClose }) {
 
 function MemberModal({ team, onClose }) {
     const queryClient = useQueryClient()
-    const { register, handleSubmit, setError, formState: { errors } } = useForm()
+    const { handleSubmit, setValue, watch, formState: { errors } } = useForm()
+    const [searchQuery, setSearchQuery] = useState('')
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+    const selectedEmail = watch('email')
+
+    // Fetch users based on search
+    const { data: users = [], isLoading: isUsersLoading } = useQuery({
+        queryKey: ['user-search', searchQuery],
+        queryFn: () => api.get(`/users/?search=${searchQuery}`).then(r => r.data),
+        enabled: isDropdownOpen
+    })
 
     const mutation = useMutation({
         mutationFn: (data) => api.post(`/teams/${team.id}/add_member/`, data),
         onSuccess: async () => {
-            // Invalidate both the teams list AND the specific team-members cache
-            // so the TaskModal immediately sees the new member without page refresh
             await Promise.all([
                 queryClient.invalidateQueries({ queryKey: ['teams'] }),
                 queryClient.invalidateQueries({ queryKey: ['team-members', team.id] }),
@@ -80,17 +88,13 @@ function MemberModal({ team, onClose }) {
             onClose()
         },
         onError: (err) => {
-            if (err.fieldErrors?.email) {
-                setError('email', { message: err.fieldErrors.email[0] })
-            } else {
-                toast.error(err.displayMessage)
-            }
+            toast.error(err.displayMessage || 'Failed to add member')
         }
     })
 
     return (
-        <div className="fixed inset-0 bg-slate-900/10 backdrop-blur-[2px] z-50 flex items-center justify-center p-6">
-            <div className="card w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-slate-900/10 backdrop-blur-[2px] z-50 flex items-center justify-center p-6" onClick={onClose}>
+            <div className="card w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
                 <div className="p-6 border-b border-slate-100 flex items-center justify-between">
                     <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest">Add Member</h2>
                     <button onClick={onClose} className="p-1 hover:bg-slate-100 text-slate-400 rounded-lg transition-colors">
@@ -99,17 +103,67 @@ function MemberModal({ team, onClose }) {
                 </div>
                 <div className="p-6">
                     <p className="text-xs text-slate-500 font-medium mb-6 leading-relaxed">
-                        Add a person to this team by their email.
+                        Search and select a person to add them to this team.
                     </p>
                     <form onSubmit={handleSubmit(mutation.mutate)} className="space-y-6">
-                        <div>
-                            <label className="label">Email Address</label>
-                            <input type="email" className="input" placeholder="someone@email.com" {...register('email', { required: 'Email required' })} />
-                            {errors.email && <p className="text-[10px] font-bold text-rose-500 mt-1.5 uppercase tracking-widest">{errors.email.message}</p>}
+                        <div className="relative">
+                            <label className="label">Select Member</label>
+
+                            {/* Search Input / Trigger */}
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <Search className="h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
+                                </div>
+                                <input
+                                    type="text"
+                                    className="input pl-10 h-11"
+                                    placeholder="Search by name or email..."
+                                    value={isDropdownOpen ? searchQuery : (selectedEmail || '')}
+                                    onFocus={() => setIsDropdownOpen(true)}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    autoComplete="off"
+                                />
+                            </div>
+
+                            {/* Dropdown Menu */}
+                            {isDropdownOpen && (
+                                <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl shadow-slate-200/50 max-h-48 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
+                                    {isUsersLoading ? (
+                                        <div className="p-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Loading...</div>
+                                    ) : users.length === 0 ? (
+                                        <div className="p-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">No users found</div>
+                                    ) : (
+                                        users.map((user) => (
+                                            <button
+                                                key={user.id}
+                                                type="button"
+                                                className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center justify-between group transition-colors border-b last:border-0 border-slate-50"
+                                                onClick={() => {
+                                                    setValue('email', user.email)
+                                                    setSearchQuery('')
+                                                    setIsDropdownOpen(false)
+                                                }}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 uppercase">
+                                                        {user.first_name?.[0] || user.username[0]}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-bold text-slate-900">{user.first_name} {user.last_name} (@{user.username})</p>
+                                                        <p className="text-[10px] text-slate-500 font-medium">{user.email}</p>
+                                                    </div>
+                                                </div>
+                                                {selectedEmail === user.email && <Check className="w-4 h-4 text-primary" />}
+                                            </button>
+                                        ))
+                                    )}
+                                </div>
+                            )}
                         </div>
+
                         <div className="flex justify-end gap-3 pt-4 border-t border-slate-50">
-                            <button type="button" onClick={onClose} className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2">Cancel</button>
-                            <button type="submit" className="btn-primary" disabled={mutation.isPending}>
+                            <button type="button" onClick={onClose} className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2 transition-colors hover:text-slate-600">Cancel</button>
+                            <button type="submit" className="btn-primary min-w-[100px]" disabled={mutation.isPending || !selectedEmail}>
                                 {mutation.isPending ? 'Adding...' : 'Add Member'}
                             </button>
                         </div>

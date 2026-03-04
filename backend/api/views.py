@@ -120,6 +120,30 @@ class CurrentUserView(APIView):
         })
 
 
+class UserListView(APIView):
+    """
+    GET /api/users/?search=...
+    Lists all users or filters by username/email for the direct add dropdown.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        search = request.query_params.get('search', '')
+        users = User.objects.all()
+        
+        if search:
+            users = users.filter(
+                db_models.Q(username__icontains=search) |
+                db_models.Q(email__icontains=search) |
+                db_models.Q(first_name__icontains=search) |
+                db_models.Q(last_name__icontains=search)
+            )
+        
+        # Limit to 20 users for performance in dropdowns
+        serializer = UserPublicSerializer(users[:20], many=True)
+        return Response(serializer.data)
+
+
 # ════════════════════════════════════════════════════════════
 # 2. TEAM VIEWS
 # ════════════════════════════════════════════════════════════

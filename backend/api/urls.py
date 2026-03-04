@@ -11,6 +11,7 @@ from .views import (
     LoginView,
     LogoutView,
     RegisterView,
+    UserListView,
     TaskViewSet,
     TeamViewSet,
     NotificationViewSet,
@@ -31,6 +32,7 @@ urlpatterns = [
 
     # Dashboard
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
+    path('users/', UserListView.as_view(), name='user-list'),
 
     # Teams + Tasks (router handles /teams/, /teams/{id}/, /tasks/, /tasks/{id}/)
     path('', include(router.urls)),
