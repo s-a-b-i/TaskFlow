@@ -34,6 +34,7 @@ export default function LoginPage() {
                 const { setManualCsrfToken } = await import('../lib/api')
                 setManualCsrfToken(csrf_token)
             }
+            window.sessionStorage.setItem('last_login_time', Date.now().toString())
             setUser(user)
             toast.success('Welcome back!')
             navigate('/')

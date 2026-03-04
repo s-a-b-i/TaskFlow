@@ -14,8 +14,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
 # ─── Security ──────────────────────────────────────────────────────────────
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-fallback-key')
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY:
+    # Use a fallback for local dev if DEBUG is explicitly True in env, otherwise fail
+    if os.environ.get('DEBUG') == 'True':
+        SECRET_KEY = 'django-insecure-dev-fallback'
+    else:
+        raise ValueError("SECRET_KEY environment variable must be set in production.")
+
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # ─── Application definition ────────────────────────────────────────────────
@@ -135,6 +142,9 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
     'CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173'
 ).split(',')
 CORS_ALLOW_CREDENTIALS = True         # Allow cookies cross-origin
+
+# Ensure Render/Vercel origins are trusted for CSRF in production
+CSRF_TRUSTED_ORIGINS = list(CORS_ALLOWED_ORIGINS)
 
 # ─── Django REST Framework ─────────────────────────────────────────────────
 REST_FRAMEWORK = {

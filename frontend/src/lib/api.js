@@ -1,5 +1,7 @@
 import axios from 'axios'
 
+const sessionStore = window.sessionStorage
+
 /**
  * Pre-configured Axios instance for all API requests.
  * - Base URL points to /api (proxied to Django in dev, direct in prod)
@@ -42,7 +44,13 @@ api.interceptors.response.use(
         // Only redirect if it's an authentication issue, NOT a permission issue
         if (error.response?.status === 403 && !window.location.pathname.startsWith('/login')) {
             const code = error.response?.data?.code
-            if (code === 'not_authenticated' || code === 'authentication_failed') {
+            const isAuthError = code === 'not_authenticated' || code === 'authentication_failed'
+
+            // Safety: Don't redirect if we just logged in < 2 seconds ago (prevents race conditions)
+            const lastLogin = sessionStore.getItem('last_login_time')
+            const isFreshLogin = lastLogin && (Date.now() - parseInt(lastLogin) < 2000)
+
+            if (isAuthError && !isFreshLogin) {
                 window.location.href = '/login'
             }
         }
