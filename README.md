@@ -78,61 +78,21 @@ docker-compose up --build
 | `/api/tasks/` | GET/POST | List (with query filters) / Create | Yes |
 | `/api/tasks/{id}/` | PATCH/DELETE | Update / Delete task | Yes |
 
+
 ---
 
-## Deployment to Google Cloud Platform (GCP)
+## API Documentation
 
-This project is tailored for **Cloud Run** and **Cloud SQL (PostgreSQL)**.
-
-### Prerequisites
-1. Install [Google Cloud CLI](https://cloud.google.com/sdk/docs/install)
-2. Authenticate: `gcloud auth login`
-3. Set your project: `gcloud config set project YOUR_PROJECT_ID`
-
-### 1. Database (Cloud SQL)
-- Create a Cloud SQL PostgreSQL instance.
-- Create a database (`taskmanager`) and a user (`taskmanager_user`).
-- Note the **Instance Connection Name**.
-
-### 2. Backend Deployment (Cloud Run)
-Cloud Run requires the app image to be pushed to Artifact Registry first.
-
-```bash
-cd backend
-
-# Create a .env.prod file based on .env.example with your Cloud SQL Details
-# Make sure to set `DEBUG=False` and configure `ALLOWED_HOSTS`
-
-# Build and Push Container using Google Cloud Build
-gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/taskmanager-backend
-
-# Deploy to Cloud Run
-gcloud run deploy taskmanager-backend \
-  --image gcr.io/YOUR_PROJECT_ID/taskmanager-backend \
-  --platform managed \
-  --region us-central1 \
-  --add-cloudsql-instances YOUR_PROJECT_ID:REGION:INSTANCE_NAME \
-  --set-env-vars="DB_HOST=/cloudsql/YOUR_PROJECT_ID:REGION:INSTANCE_NAME,DB_ENGINE=django.db.backends.postgresql,DEBUG=False" \
-  --allow-unauthenticated
-```
-*Note your Backend URL when done.*
-
-### 3. Frontend Deployment (Firebase Hosting or Cloud Run)
-Update `./frontend/src/lib/api.js` to point `baseURL` to your deployed Cloud Run backend URL instead of `/api` if CORS issues arise.
-
-**Option A: Firebase Hosting (Recommended for React SPA)**
-```bash
-cd frontend
-npm run build
-npm install -g firebase-tools
-firebase login
-firebase init hosting # Select output directory as "dist"
-firebase deploy
-```
-
-**Option B: Cloud Run (Using the provided Dockerfile + Nginx)**
-```bash
-cd frontend
-gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/taskmanager-frontend
-gcloud run deploy taskmanager-frontend --image gcr.io/YOUR_PROJECT_ID/taskmanager-frontend --platform managed --allow-unauthenticated --port 80
-```
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| `/api/auth/register/` | POST | Register new user | No |
+| `/api/auth/login/` | POST | Login and receive session | No |
+| `/api/auth/logout/` | POST | Clear session | Yes |
+| `/api/auth/me/` | GET | Get current user profile | Yes |
+| `/api/dashboard/` | GET | Stats & overdue list | Yes |
+| `/api/teams/` | GET/POST | List/Create teams | Yes |
+| `/api/teams/{id}/` | GET/PATCH/DELETE | Retrieve, update, or delete team | Yes (Owner to delete) |
+| `/api/teams/{id}/add_member/` | POST | Invite user by email | Yes (Owner only) |
+| `/api/teams/{id}/remove_member/` | POST | Remove user from team | Yes (Owner only) |
+| `/api/tasks/` | GET/POST | List (with query filters) / Create | Yes |
+| `/api/tasks/{id}/` | PATCH/DELETE | Update / Delete task | Yes |

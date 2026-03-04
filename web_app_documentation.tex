@@ -1,127 +1,1052 @@
 \documentclass[12pt,a4paper]{article}
+
+% ─── Packages ───────────────────────────────────────────────────────────────
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{geometry}
-\geometry{a4paper, margin=1in}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
 \usepackage{hyperref}
 \usepackage{xcolor}
 \usepackage{listings}
-\usepackage{graphicx}
 \usepackage{enumitem}
-\usepackage{tcolorbox}
 \usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{tcolorbox}
+\usepackage{parskip}
+\usepackage{fontawesome5}
+\usepackage{lmodern}
 
-% Define Colors based on App Design System
-\definecolor{primary}{HTML}{2563EB}
-\definecolor{background}{HTML}{F9FAFB}
-\definecolor{textmain}{HTML}{111827}
-\definecolor{emerald}{HTML}{059669}
-\definecolor{rose}{HTML}{DC2626}
+% ─── Colors ─────────────────────────────────────────────────────────────────
+\definecolor{primaryblue}{RGB}{37,99,235}
+\definecolor{darkblue}{RGB}{30,64,175}
+\definecolor{codebg}{RGB}{248,250,252}
+\definecolor{codeframe}{RGB}{226,232,240}
+\definecolor{terminalgreen}{RGB}{16,185,129}
+\definecolor{darkorange}{RGB}{234,88,12}
+\definecolor{rose}{RGB}{244,63,94}
+\definecolor{textgray}{RGB}{71,85,105}
 
+% ─── Code Listings ──────────────────────────────────────────────────────────
+\lstset{
+  backgroundcolor=\color{codebg},
+  frame=single,
+  framerule=0.5pt,
+  rulecolor=\color{codeframe},
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{primaryblue}\bfseries,
+  commentstyle=\color{textgray}\itshape,
+  stringstyle=\color{darkorange},
+  numbers=left,
+  numberstyle=\tiny\color{textgray},
+  stepnumber=1,
+  tabsize=4,
+  showspaces=false,
+  showstringspaces=false,
+  breaklines=true,
+  captionpos=b
+}
+
+\lstdefinelanguage{bash}{
+  keywords={python,pip,git,cd,npm,npx},
+  morecomment=[l]{\#},
+  morestring=[b]",
+}
+
+% ─── Section styling ────────────────────────────────────────────────────────
+\titleformat{\section}{\Large\bfseries\color{primaryblue}}{}{0em}{}[\color{codeframe}\titlerule]
+\titleformat{\subsection}{\large\bfseries\color{darkblue}}{}{0em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{textgray}}{}{0em}{}
+
+% ─── Callout boxes ──────────────────────────────────────────────────────────
+\tcbuselibrary{skins,breakable}
+\newtcolorbox{notebox}{colback=blue!5,colframe=primaryblue,fonttitle=\bfseries,title=Note}
+\newtcolorbox{warnbox}{colback=orange!5,colframe=darkorange,fonttitle=\bfseries,title=Important}
+\newtcolorbox{termbox}{colback=black!95,colframe=black,colupper=terminalgreen,fontupper=\ttfamily\small,title=Terminal}
+
+% ─── Header / Footer ────────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\color{textgray}\small TaskFlow — Technical Documentation}
+\lhead{\color{primaryblue}\small\textbf{TF}}
+\rfoot{\color{textgray}\small Page \thepage}
+
+% ─── Hyperlink setup ────────────────────────────────────────────────────────
 \hypersetup{
     colorlinks=true,
-    linkcolor=primary,
-    filecolor=magenta,      
-    urlcolor=primary,
+    linkcolor=primaryblue,
+    urlcolor=primaryblue,
+    pdftitle={TaskFlow Technical Documentation},
+    pdfauthor={TaskFlow Team},
 }
 
-\titleformat{\section}
-  {\normalfont\Large\bfseries\color{primary}}{\thesection}{1em}{}
-
-\title{
-    \vspace{-2cm}
-    \textbf{Team Task Manager}\\
-    \large{Comprehensive Technical Documentation}
-}
-\author{Antigravity AI Assistant}
-\date{\today}
-
+% ════════════════════════════════════════════════════════════════════════════
 \begin{document}
+% ════════════════════════════════════════════════════════════════════════════
 
-\maketitle
+\begin{titlepage}
+    \centering
+    \vspace*{3cm}
+    {\Huge\bfseries\color{primaryblue} TaskFlow}\\[0.5em]
+    {\Large\color{textgray} Complete Technical Documentation}\\[2em]
+    \noindent\rule{\linewidth}{0.5pt}\\[2em]
+    {\large A full-stack Team Task Manager built with\\[0.3em]
+    \textbf{Django REST Framework} + \textbf{React}}\\[3em]
+    {\color{textgray} Covers: Architecture · Backend · Frontend · API · Deployment}\\[1em]
+    {\small\color{textgray} Version 1.0 · March 2026}
+    \vfill
+\end{titlepage}
 
-\section{Introduction}
-The \textbf{Team Task Manager} is a modern, full-stack web application designed for seamless team collaboration and task organization. It provides a robust platform for managing workspaces (Teams), tracking work items (Tasks), and maintaining real-time awareness through a sophisticated notification system.
+\tableofcontents
+\newpage
 
-\section{Technical Stack}
 
-\subsection{Frontend Architecture}
-The frontend is built with a focus on performance, responsiveness, and premium aesthetics.
+% ════════════════════════════════════════════════════════════════════════════
+\section{Project Overview}
+% ════════════════════════════════════════════════════════════════════════════
+
+TaskFlow is a real-time, collaborative task management application. It allows teams to create workspaces, assign tasks to multiple members, and track progress — all from a clean, modern interface.
+
+\subsection{High-Level Architecture}
+
+The project is split into two completely separate applications that communicate over HTTP:
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Layer} & \textbf{Technology} & \textbf{Responsibility} \\
+\midrule
+Frontend & React (Vite) & User Interface \\
+Backend & Django (Python) & Business Logic + Database \\
+Database & PostgreSQL (Neon.tech) & Data Storage \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{notebox}
+The Frontend and Backend are \textbf{completely independent}. The Frontend does NOT touch Python or Django at all. They talk to each other only through \textbf{API calls} (HTTP requests sending JSON data).
+\end{notebox}
+
+\subsection{Live URLs}
 \begin{itemize}
-    \item \textbf{Framework:} React (Vite-powered) for a fast development loop and optimized production builds.
-    \item \textbf{State Management:}
+    \item \textbf{Frontend (Vercel):} \url{https://task-flow-theta-six.vercel.app}
+    \item \textbf{Backend API (Render):} \url{https://task-manager-backend-zfld.onrender.com}
+    \item \textbf{Database (Neon.tech):} PostgreSQL cloud database
+\end{itemize}
+
+\subsection{Project Folder Structure}
+\begin{lstlisting}
+TaskFlow/                  <- root repo
+├── backend/               <- Django project
+│   ├── core/              <- settings, URLs, WSGI
+│   │   ├── settings.py    <- all configuration
+│   │   ├── urls.py        <- URL routing (top-level)
+│   │   └── wsgi.py        <- production server entry
+│   ├── api/               <- our main app
+│   │   ├── models.py      <- database tables
+│   │   ├── serializers.py <- data validation & formatting
+│   │   ├── views.py       <- request handlers (API logic)
+│   │   ├── urls.py        <- API URL routing
+│   │   ├── permissions.py <- access control rules
+│   │   └── exceptions.py  <- custom error handling
+│   ├── requirements.txt   <- Python libraries
+│   └── .env               <- secret environment variables
+│
+└── frontend/              <- React project
+    ├── src/
+    │   ├── components/    <- reusable UI pieces
+    │   ├── pages/         <- full pages
+    │   ├── store/         <- global state (Zustand)
+    │   ├── lib/           <- API client (Axios)
+    │   └── index.css      <- global styles
+    ├── public/            <- static assets (logo, etc.)
+    └── index.html         <- entry HTML file
+\end{lstlisting}
+
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Technology Stack Explained}
+% ════════════════════════════════════════════════════════════════════════════
+
+\subsection{Backend Technologies}
+
+\subsubsection{Python}
+Python is the programming language the backend is written in. It reads almost like plain English, which makes it great for beginners. We use Python 3.11+.
+
+\subsubsection{Django}
+Django is a high-level \textbf{web framework} for Python. Think of it as a toolkit that handles:
+\begin{itemize}
+    \item Connecting to the database
+    \item Handling user authentication and sessions
+    \item URL routing (deciding which code runs when someone visits a URL)
+    \item Admin panel (a built-in dashboard for managing data)
+\end{itemize}
+
+\subsubsection{Django REST Framework (DRF)}
+DRF is a plugin on top of Django. It converts Django into an \textbf{API server} — instead of returning HTML pages, it returns \textbf{JSON data}. The frontend then reads this JSON.
+
+\subsubsection{PostgreSQL}
+A powerful, open-source database. We store all user data, teams, tasks, and notifications here. Django talks to it using \textbf{models} (Python classes that represent tables).
+
+\subsubsection{Gunicorn}
+A \textbf{production web server} for Python apps. In development we use Django's built-in server, but in production on Render we use Gunicorn because it's faster and more stable.
+
+\subsubsection{Whitenoise}
+Serves static files (CSS, images) directly from Django without needing a separate file server.
+
+\subsubsection{Key Python Libraries}
+\begin{center}
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\textbf{Library} & \textbf{Version} & \textbf{Purpose} \\
+\midrule
+django & 5.0.6 & Core web framework \\
+djangorestframework & 3.15.2 & JSON API layer \\
+django-cors-headers & 4.4.0 & Allow cross-domain requests from the frontend \\
+psycopg2-binary & 2.9.9 & PostgreSQL database driver for Python \\
+python-dotenv & 1.0.1 & Load secrets from a .env file \\
+whitenoise & 6.7.0 & Serve static files \\
+gunicorn & 22.0.0 & Production WSGI server \\
+dj-database-url & 2.1.0 & Parse database URL from environment variable \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Frontend Technologies}
+
+\subsubsection{React (with Vite)}
+React is a JavaScript library for building user interfaces. \textbf{Vite} is the build tool that bundles all the JavaScript/CSS files and runs a fast development server.
+
+\subsubsection{Tailwind CSS}
+A CSS framework where you style elements using short utility class names directly in your HTML/JSX (e.g., \texttt{bg-blue-50 text-slate-900 rounded-xl}).
+
+\subsubsection{TanStack Query (React Query)}
+Manages server state — handles fetching data from the API, caching it, and automatically refetching when needed. Replaces manual \texttt{useEffect + fetch} code.
+
+\subsubsection{Zustand}
+A minimal global state manager. Used to store the logged-in user's information so any component can access it without passing it as a prop.
+
+\subsubsection{Axios}
+An HTTP client library. Used to make API calls to the Django backend. We have a custom instance \texttt{api.js} that automatically adds auth headers.
+
+\subsubsection{React Hook Form + Zod}
+Handles form validation. Zod defines the schema (rules), and React Hook Form manages the form state efficiently.
+
+\subsubsection{Lucide React}
+Icon library — provides all the icons used in the UI (bell, trash, edit, etc.).
+
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Backend — Deep Dive}
+% ════════════════════════════════════════════════════════════════════════════
+
+\subsection{Django Concepts Explained Simply}
+
+\subsubsection{What is a Model?}
+A \textbf{Model} is a Python class that represents a \textbf{database table}. Each attribute of the class is a column in that table. When you define a model, Django can automatically create the database table for you using \textbf{migrations}.
+
+\begin{lstlisting}[language=Python, caption=Example: a simple model]
+class Task(models.Model):
+    title = models.CharField(max_length=200)   # text column
+    status = models.CharField(...)              # another text column
+    due_date = models.DateField(null=True)      # date column, can be empty
+\end{lstlisting}
+
+\subsubsection{What is a Migration?}
+A migration is like a \textbf{changelog} for your database. When you change a model (add/remove a field), you run two commands:
+\begin{termbox}
+# Step 1: Generate the migration file (detects your changes)
+python manage.py makemigrations
+
+# Step 2: Apply it to the database
+python manage.py migrate
+\end{termbox}
+Django tracks which migrations have been applied and only runs new ones.
+
+\subsubsection{What is a Serializer?}
+A serializer converts \textbf{Python objects} (Django model instances) into \textbf{JSON} (for sending to the frontend), and vice versa. It also validates incoming data.
+
+\begin{lstlisting}[language=Python, caption=Serializer flow]
+# Incoming JSON from frontend:
+{ "title": "Fix bug", "priority": "high", "team": 1 }
+         |
+         v
+# Serializer validates it, converts to Python dict
+         |
+         v
+# .save() creates/updates a Task object in the database
+\end{lstlisting}
+
+\subsubsection{What is a ViewSet?}
+A ViewSet is a class that handles multiple related HTTP methods in one place. For example, \texttt{TaskViewSet} handles:
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Method} & \textbf{URL} & \textbf{Action} \\
+\midrule
+GET & /api/tasks/ & List all tasks \\
+POST & /api/tasks/ & Create a new task \\
+GET & /api/tasks/5/ & Get task with id=5 \\
+PATCH & /api/tasks/5/ & Update task with id=5 \\
+DELETE & /api/tasks/5/ & Delete task with id=5 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+\subsection{Database Models}
+
+\subsubsection{User Model}
+Extends Django's built-in \texttt{AbstractUser}. We override it to use \textbf{email} as the login field instead of username.
+
+\begin{lstlisting}[language=Python]
+class User(AbstractUser):
+    email = models.EmailField(unique=True)
+    USERNAME_FIELD = 'email'   # login with email, not username
+\end{lstlisting}
+
+\begin{notebox}
+Django stores passwords as \textbf{hashed} values using PBKDF2-SHA256. The plain password is never stored anywhere.
+\end{notebox}
+
+\subsubsection{Team Model}
+A workspace that groups members and tasks. Every team has one creator/owner.
+
+\begin{lstlisting}[language=Python]
+class Team(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)  # set once on create
+    updated_at = models.DateTimeField(auto_now=True)       # updated on every save
+\end{lstlisting}
+
+\textbf{ForeignKey} means: each team has \textbf{one} creator, and that creator is a User. If the User is deleted, the team is also deleted (\texttt{CASCADE}).
+
+\subsubsection{TeamMembership Model}
+This is a \textbf{junction table} (many-to-many relationship with extra data). It connects Users to Teams and stores their role (owner/member).
+
+\begin{lstlisting}[language=Python]
+class TeamMembership(models.Model):
+    team = models.ForeignKey(Team, ...)
+    user = models.ForeignKey(User, ...)
+    role = models.CharField(choices=[('owner','Owner'),('member','Member')])
+    joined_at = models.DateTimeField(default=timezone.now)
+    
+    class Meta:
+        unique_together = ('team', 'user')  # can't be in same team twice
+\end{lstlisting}
+
+\subsubsection{Task Model}
+The core model. Tasks belong to a team, are created by one user, and can be \textbf{assigned to multiple users} (ManyToMany).
+
+\begin{lstlisting}[language=Python]
+class Task(models.Model):
+    title = models.CharField(max_length=200)
+    status = models.CharField(choices=['todo','in_progress','done'])
+    priority = models.CharField(choices=['low','medium','high'])
+    due_date = models.DateField(null=True, blank=True)
+    
+    team = models.ForeignKey(Team, ...)          # belongs to ONE team
+    assigned_to = models.ManyToManyField(User)   # many users can be assigned
+    created_by = models.ForeignKey(User, ...)    # created by ONE user
+\end{lstlisting}
+
+\textbf{ManyToManyField} automatically creates a hidden database table (e.g., \texttt{task\_assigned\_to}) with rows like \texttt{(task\_id, user\_id)}.
+
+\subsubsection{Notification Model}
+Stores per-user notifications for events like overdue tasks and task assignments.
+
+\begin{lstlisting}[language=Python]
+class Notification(models.Model):
+    user = models.ForeignKey(User, ...)   # belongs to ONE user
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    type = models.CharField(choices=['overdue_task','task_assignment', ...])
+    is_read = models.BooleanField(default=False)
+\end{lstlisting}
+
+
+\subsection{Authentication — How Login Works}
+
+We use \textbf{Session-based authentication}, which works like this:
+
+\begin{enumerate}
+    \item User sends email + password to \texttt{POST /api/auth/login/}
+    \item Django validates credentials using \texttt{authenticate()}
+    \item \texttt{login(request, user)} creates a \textbf{session} in the database and sends a \textbf{session cookie} to the browser
+    \item On every subsequent request, the browser automatically sends the cookie
+    \item Django looks up the session, finds the user, and the user is "logged in"
+    \item The response also includes a \texttt{csrf\_token} for security
+\end{enumerate}
+
+\begin{notebox}
+Because our frontend (Vercel) and backend (Render) are on \textbf{different domains}, cookies need special settings: \texttt{SameSite=None} and \texttt{Secure=True}. This is required for cross-origin cookie sharing.
+\end{notebox}
+
+\subsection{CSRF Protection}
+
+\textbf{CSRF} (Cross-Site Request Forgery) is an attack where a malicious website tricks your browser into making requests to our API using your session.
+
+Django's built-in CSRF protection works by:
+\begin{enumerate}
+    \item Setting a hidden \texttt{csrftoken} cookie 
+    \item Requiring every POST/PATCH/DELETE request to include this token in the header
+    \item Rejecting requests that don't have it
+\end{enumerate}
+
+Since cookies are unreliable across domains, we also \textbf{return the CSRF token in the login response JSON}, and the frontend stores it manually and attaches it to every request header (\texttt{X-CSRFToken}).
+
+\subsection{Permissions and Access Control}
+
+We have a custom permission class \texttt{IsTeamOwner} that restricts certain team actions (edit/delete team, add/remove members) to only the team owner.
+
+\begin{lstlisting}[language=Python]
+class IsTeamOwner(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        # obj is the Team
+        return TeamMembership.objects.filter(
+            team=obj, user=request.user, role='owner'
+        ).exists()
+\end{lstlisting}
+
+All other endpoints require \texttt{IsAuthenticated} (user must be logged in).
+
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{API Endpoints Reference}
+% ════════════════════════════════════════════════════════════════════════════
+
+All endpoints are prefixed with \texttt{/api/}. Only auth endpoints are public; all others require a valid session cookie.
+
+\subsection{Authentication Endpoints}
+\begin{center}
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\midrule
+POST & /api/auth/register/ & Register a new user, returns user + csrf\_token \\
+POST & /api/auth/login/ & Login, returns user + csrf\_token \\
+POST & /api/auth/logout/ & Destroy session \\
+GET & /api/auth/me/ & Get current logged-in user \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Register Request Body}
+\begin{lstlisting}[language=bash]
+{
+  "first_name": "John",
+  "last_name": "Doe",
+  "username": "johndoe",
+  "email": "john@example.com",
+  "password": "securePassword123"
+}
+\end{lstlisting}
+
+\subsection{Teams Endpoints}
+\begin{center}
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\midrule
+GET & /api/teams/ & List all teams user is a member of \\
+POST & /api/teams/ & Create a new team \\
+GET & /api/teams/:id/ & Get a single team \\
+PATCH & /api/teams/:id/ & Update team (owner only) \\
+DELETE & /api/teams/:id/ & Delete team (owner only) \\
+GET & /api/teams/:id/members/ & List team members \\
+POST & /api/teams/:id/add\_member/ & Add member by email \\
+POST & /api/teams/:id/remove\_member/ & Remove a member (with safety check) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Remove Member — Safety Flow}
+\begin{lstlisting}[language=bash]
+# First call (force=false)
+POST /api/teams/1/remove_member/
+{ "user_id": 5 }
+
+# If user has assigned tasks, returns:
+{ "warning": "user_has_tasks", "detail": "User is assigned to 3 tasks." }
+
+# Second call (force=true) — user confirmed
+POST /api/teams/1/remove_member/
+{ "user_id": 5, "force": true }
+# This unassigns the user from all tasks, then removes from team
+\end{lstlisting}
+
+\subsection{Tasks Endpoints}
+\begin{center}
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\midrule
+GET & /api/tasks/ & List tasks (supports filters) \\
+POST & /api/tasks/ & Create a task \\
+GET & /api/tasks/:id/ & Get a single task \\
+PATCH & /api/tasks/:id/ & Update task \\
+DELETE & /api/tasks/:id/ & Delete task (creator only) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Task Filters (Query Parameters)}
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Parameter} & \textbf{Example} \\
+\midrule
+team & ?team=1 \\
+status & ?status=in\_progress \\
+priority & ?priority=high \\
+search & ?search=bug \\
+my\_tasks & ?my\_tasks=true \\
+overdue & ?overdue=true \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Create Task Request Body}
+\begin{lstlisting}[language=bash]
+{
+  "title": "Fix login bug",
+  "description": "Users can't login on mobile",
+  "status": "todo",
+  "priority": "high",
+  "team": 1,
+  "assigned_to_ids": [2, 3],  // list of user IDs
+  "due_date": "2026-03-10"    // or null
+}
+\end{lstlisting}
+
+\subsection{Dashboard \& Notifications}
+\begin{center}
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\midrule
+GET & /api/dashboard/ & Stats: task counts, overdue tasks \\
+GET & /api/notifications/ & List unread notifications \\
+POST & /api/notifications/:id/read/ & Mark one as read \\
+POST & /api/notifications/read\_all/ & Mark all as read \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Frontend — Deep Dive}
+% ════════════════════════════════════════════════════════════════════════════
+
+\subsection{Application Structure}
+
+\subsubsection{Routing}
+React Router manages navigation. All routes are defined in \texttt{App.jsx}:
+
+\begin{lstlisting}[language=bash]
+/login      -> LoginPage.jsx     (public)
+/register   -> RegisterPage.jsx  (public)
+/           -> DashboardPage.jsx (protected - must be logged in)
+/tasks      -> TasksPage.jsx     (protected)
+/teams      -> TeamsPage.jsx     (protected)
+\end{lstlisting}
+
+Protected routes are wrapped in a \texttt{ProtectedRoute} component that checks if the user is authenticated and redirects to \texttt{/login} if not.
+
+\subsubsection{API Client (lib/api.js)}
+All HTTP requests go through a centralized Axios instance. It automatically:
+\begin{itemize}
+    \item Sets the base URL to the backend
+    \item Includes \texttt{withCredentials: true} (sends session cookies)
+    \item Attaches \texttt{X-CSRFToken} header to every mutation request
+    \item Intercepts error responses and formats them into readable messages
+\end{itemize}
+
+\subsubsection{Global State (Zustand — authStore.js)}
+Stores the logged-in user's data. Any component can access it:
+
+\begin{lstlisting}[language=bash]
+const { user, setUser, clearUser } = useAuthStore()
+\end{lstlisting}
+
+On app load, it calls \texttt{GET /api/auth/me/} to restore the session if the user refreshes the page.
+
+\subsubsection{Data Fetching (React Query)}
+React Query handles all data fetching with automatic caching:
+
+\begin{lstlisting}[language=bash]
+// Fetch teams
+const { data: teams } = useQuery({
+    queryKey: ['teams'],           // unique cache key
+    queryFn: () => api.get('/teams/').then(r => r.data)
+})
+
+// Create a team
+const mutation = useMutation({
+    mutationFn: (data) => api.post('/teams/', data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['teams'] })
+})
+\end{lstlisting}
+
+\texttt{invalidateQueries} tells React Query to re-fetch the teams list after a successful mutation, keeping the UI in sync without page refresh.
+
+\subsection{Key Pages}
+
+\subsubsection{DashboardPage}
+Fetches stats from \texttt{/api/dashboard/} and displays:
+\begin{itemize}
+    \item 4 stat cards: My Teams, All Tasks, My Tasks, Due Today
+    \item Task status overview: Queued / Active / Done counts
+    \item Overdue task reminders panel
+\end{itemize}
+
+\subsubsection{TasksPage}
+\begin{itemize}
+    \item Kanban-style 3-column board: To Do / In Progress / Done
+    \item Filter bar (by team, status, priority, search, my tasks, overdue)
+    \item Filters are stored in URL query parameters (\texttt{?status=todo}) using \texttt{useSearchParams}
+    \item Only task creators see edit/delete buttons
+    \item Multiple assignee avatars shown on each card
+\end{itemize}
+
+\subsubsection{TeamsPage}
+\begin{itemize}
+    \item Grid of team cards, each showing members
+    \item Owner can edit/delete team, add/remove members
+    \item Remove member flow: warns if member has assigned tasks and asks for confirmation before proceeding
+    \item Removing a member unassigns them from all tasks in that team
+\end{itemize}
+
+\subsubsection{TaskModal}
+A modal dialog for creating/editing tasks:
+\begin{itemize}
+    \item Fields: Title, Description, Team, Due Date, Status, Priority, Assign To
+    \item Assignee list is fetched fresh every time (\texttt{staleTime:0})
+    \item Changing team clears selected assignees (prevents cross-team assignment bug)
+    \item Loading spinner while fetching members
+\end{itemize}
+
+\subsection{State Management Strategy}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{What} & \textbf{Where stored} & \textbf{Tool} \\
+\midrule
+Logged-in user profile & Global state & Zustand \\
+Teams list & Server cache & React Query \\
+Tasks list & Server cache & React Query \\
+Team members list & Server cache & React Query \\
+Notifications & Server cache & React Query \\
+Form data & Local component state & React Hook Form \\
+Modal open/close & Local component state & useState \\
+URL filters & URL query params & useSearchParams \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{warnbox}
+\textbf{Cache Invalidation Rule:} After any mutation (add/remove member, create/update/delete task), we call \texttt{queryClient.invalidateQueries()} with the relevant key. This forces React Query to re-fetch that data immediately, so the UI updates without a page refresh.
+\end{warnbox}
+
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Development Setup (Before Production)}
+% ════════════════════════════════════════════════════════════════════════════
+
+\subsection{Prerequisites}
+\begin{itemize}
+    \item Python 3.11+
+    \item Node.js 18+
+    \item Git
+    \item A PostgreSQL database (or use SQLite for local development)
+\end{itemize}
+
+\subsection{Backend Setup}
+
+\begin{termbox}
+# 1. Clone the repository
+git clone https://github.com/your-org/TaskFlow.git
+cd TaskFlow/backend
+
+# 2. Create a virtual environment (isolates Python packages)
+python -m venv venv
+
+# 3. Activate it
+# Windows:
+venv\Scripts\activate
+# Mac/Linux:
+source venv/bin/activate
+
+# 4. Install all Python dependencies
+pip install -r requirements.txt
+
+# 5. Create your .env file (copy from example)
+# Fill in your secrets (see Section 8 for variables)
+\end{termbox}
+
+\begin{termbox}
+# 6. Run migrations to create database tables
+python manage.py makemigrations
+python manage.py migrate
+
+# 7. Create a superuser for the Django Admin panel
+python manage.py createsuperuser
+
+# 8. Start the development server (runs on port 8000)
+python manage.py runserver
+\end{termbox}
+
+Backend is now running at: \texttt{http://localhost:8000}\\
+Admin panel: \texttt{http://localhost:8000/admin/}
+
+\subsection{Frontend Setup}
+
+\begin{termbox}
+# Navigate to frontend directory
+cd TaskFlow/frontend
+
+# Install all Node.js dependencies
+npm install
+
+# Start the development server (runs on port 5173)
+npm run dev
+\end{termbox}
+
+Frontend is now running at: \texttt{http://localhost:5173}
+
+\begin{notebox}
+In development, the frontend talks to \texttt{http://localhost:8000}. In production, it talks to your live Render URL. This is configured in \texttt{lib/api.js} using environment variables.
+\end{notebox}
+
+\subsection{Backend Environment Variables (.env)}
+
+Create a file called \texttt{.env} inside the \texttt{backend/} folder:
+
+\begin{lstlisting}
+# SECURITY
+SECRET_KEY=your-very-long-random-secret-key-here
+DEBUG=True                    # False in production!
+
+# ALLOWED HOSTS
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# DATABASE (for local SQLite, leave DATABASE_URL empty)
+DATABASE_URL=                 # leave empty for SQLite
+# For PostgreSQL:
+# DATABASE_URL=postgresql://user:password@host:5432/dbname
+
+# CORS (frontend URL)
+CORS_ALLOWED_ORIGINS=http://localhost:5173
+
+# SESSION DURATION (in seconds)
+SESSION_COOKIE_AGE=86400      # 24 hours
+\end{lstlisting}
+
+\begin{warnbox}
+\textbf{NEVER commit your .env file to Git!} It contains secrets. Make sure \texttt{.env} is listed in your \texttt{.gitignore} file.
+\end{warnbox}
+
+\subsection{Frontend Environment Variables (.env)}
+
+Create a file called \texttt{.env} inside the \texttt{frontend/} folder:
+
+\begin{lstlisting}
+VITE_API_BASE_URL=http://localhost:8000
+\end{lstlisting}
+
+In production, set this to your Render backend URL.
+
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Deployment Flow}
+% ════════════════════════════════════════════════════════════════════════════
+
+\subsection{Infrastructure Overview}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Service} & \textbf{Platform} & \textbf{Cost} \\
+\midrule
+Database & Neon.tech & Free tier \\
+Backend API & Render & Free tier \\
+Frontend & Vercel & Free tier \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Step 1: Set Up the Database (Neon.tech)}
+
+\begin{enumerate}
+    \item Go to \url{https://neon.tech} and create a free account
+    \item Create a new project (e.g., "taskflow")
+    \item Copy the \textbf{Connection String} (it looks like:\\ \texttt{postgresql://user:pass@host.neon.tech/dbname?sslmode=require})
+    \item Save this — it is your \texttt{DATABASE\_URL}
+\end{enumerate}
+
+\subsection{Step 2: Deploy Backend to Render}
+
+\begin{enumerate}
+    \item Push your code to GitHub
+    \item Go to \url{https://render.com} and create a free account
+    \item Click \textbf{New} → \textbf{Web Service}
+    \item Connect your GitHub repository
+    \item Configure:
     \begin{itemize}
-        \item \textbf{Zustand:} Lightweight global store for authentication and user session state.
-        \item \textbf{React Query (TanStack):} Powerful server-state management for caching, synchronization, and background refetching of API data.
+        \item \textbf{Name:} task-manager-backend
+        \item \textbf{Root Directory:} backend
+        \item \textbf{Runtime:} Python 3
+        \item \textbf{Build Command:} \texttt{pip install -r requirements.txt}
+        \item \textbf{Start Command:} \texttt{gunicorn core.wsgi:application}
     \end{itemize}
-    \item \textbf{Styling:} \textbf{Tailwind CSS v4} for a utility-first, highly customizable design system.
-    \item \textbf{Icons:} \textbf{Lucide React} provides a consistent and modern iconography set.
-    \item \textbf{Utilities:} \texttt{date-fns} for complex date manipulation and \texttt{react-hot-toast} for interactive user feedback.
-\end{itemize}
+    \item Add all \textbf{Environment Variables} (from your .env) in Render's dashboard
+    \item Set \texttt{DEBUG=False} and \texttt{ALLOWED\_HOSTS} to your Render domain
+    \item After deploying, run migrations:
+\end{enumerate}
 
-\subsection{Backend Architecture}
-The backend provides a secure and scalable API layer.
+\begin{termbox}
+# In Render dashboard, open Shell tab and run:
+python manage.py migrate
+python manage.py collectstatic --no-input  # serve static files
+\end{termbox}
+
+\begin{notebox}
+Render automatically restarts your app on every \texttt{git push} to your connected branch.
+\end{notebox}
+
+\subsection{Step 3: Deploy Frontend to Vercel}
+
+\begin{enumerate}
+    \item Go to \url{https://vercel.com} and create a free account
+    \item Click \textbf{New Project} → import your GitHub repo
+    \item Configure:
+    \begin{itemize}
+        \item \textbf{Root Directory:} frontend
+        \item \textbf{Framework Preset:} Vite
+        \item \textbf{Build Command:} \texttt{npm run build}
+        \item \textbf{Output Directory:} dist
+    \end{itemize}
+    \item Add Environment Variable: \texttt{VITE\_API\_BASE\_URL=https://your-render-url.onrender.com}
+    \item Click Deploy
+\end{enumerate}
+
+\subsubsection{React Router Fix (vercel.json)}
+Without this file, refreshing any page other than \texttt{/} gives a 404 error. Create \texttt{frontend/vercel.json}:
+
+\begin{lstlisting}[language=bash]
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
+\end{lstlisting}
+
+This tells Vercel to always serve \texttt{index.html} and let React Router handle the routing.
+
+\subsection{Step 4: Configure Cross-Domain Settings}
+
+Since frontend (Vercel) and backend (Render) are on different domains, the following settings are critical:
+
+\subsubsection{Render Environment Variables}
+\begin{lstlisting}
+SECRET_KEY=<your-secret-key>
+DEBUG=False
+DATABASE_URL=postgresql://...   (from Neon.tech)
+ALLOWED_HOSTS=your-backend.onrender.com
+CORS_ALLOWED_ORIGINS=https://your-frontend.vercel.app
+SESSION_COOKIE_AGE=86400
+\end{lstlisting}
+
+\subsubsection{Django settings.py Production Behavior}
+When \texttt{DEBUG=False}, these settings activate:
 \begin{itemize}
-    \item \textbf{Framework:} \textbf{Django 5.0} with \textbf{Django REST Framework (DRF)} for building RESTful endpoints.
-    \item \textbf{Database:} SQLite (Development) with support for production-grade relational databases.
-    \item \textbf{Authentication:} Session-based authentication using Django's secure built-in mechanisms.
-    \item \textbf{Timezone Management:} Configured to \texttt{Asia/Karachi} (UTC+5) to ensure local consistency for task deadlines.
+    \item \texttt{SESSION\_COOKIE\_SAMESITE = 'None'} — allows cross-domain session cookies
+    \item \texttt{SESSION\_COOKIE\_SECURE = True} — HTTPS only
+    \item \texttt{CSRF\_COOKIE\_SAMESITE = 'None'} — allows cross-domain CSRF cookies
+    \item \texttt{CSRF\_COOKIE\_SECURE = True} — HTTPS only
 \end{itemize}
 
-\section{Design System and Aesthetics}
+\subsection{Deployment Troubleshooting}
 
-\subsection{Color Palette}
-The application follows a clean, professional "Card-Based" design with a focused color palette:
-\begin{itemize}
-    \item \textbf{Primary:} \colorbox{primary}{\textcolor{white}{\#2563EB}} - Used for main actions, navigation, and focus states.
-    \item \textbf{Background:} \colorbox{background}{\#F9FAFB} - Provides a soft, light-gray foundation for high readability.
-    \item \textbf{Typography:} \textbf{Inter} font family for a modern, geometric, and legible appearance.
-\end{itemize}
+\begin{center}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Problem} & \textbf{Solution} \\
+\midrule
+403 CSRF Failed & Ensure CORS\_ALLOWED\_ORIGINS includes the frontend URL. Check CSRF\_TRUSTED\_ORIGINS too. \\
+403 Not Authenticated & Session cookie not being sent. Check \texttt{withCredentials: true} in Axios and \texttt{CORS\_ALLOW\_CREDENTIALS=True} in Django. \\
+SECRET\_KEY error & Set the SECRET\_KEY environment variable in Render dashboard. \\
+500 Server Error & Check Render logs. Common causes: missing migrations, missing env vars, import errors. \\
+404 on page refresh & Add vercel.json rewrites as shown above. \\
+Static files not found & Run \texttt{collectstatic} and ensure Whitenoise is installed. \\
+\bottomrule
+\end{tabularx}
+\end{center}
 
-\subsection{UI Components}
-\begin{itemize}
-    \item \textbf{Glassmorphism:} Subtle backdrop blurs (10px) on modals and overlays for a premium feel.
-    \item \textbf{Interactive Badges:} Status and priority are color-coded (e.g., Rose for High Priority, Emerald for Completed).
-    \item \textbf{Micro-animations:} Hover transitions and scale effects (\texttt{active:scale-95}) enhance the tactile feel of the interface.
-\end{itemize}
 
-\section{Application Flow and Logic}
+% ════════════════════════════════════════════════════════════════════════════
+\section{Security Considerations}
+% ════════════════════════════════════════════════════════════════════════════
 
-\subsection{User Authentication}
-Users enter through a clean \textbf{Login/Register} flow. Upon successful authentication, a session is established, and the user is redirected to the Dashboard.
+\begin{center}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Concern} & \textbf{How We Handle It} \\
+\midrule
+Password storage & Django hashes with PBKDF2-SHA256. Plain passwords never stored. \\
+Session hijacking & \texttt{SESSION\_COOKIE\_HTTPONLY=True} prevents JavaScript from reading the cookie. \\
+CSRF attacks & Django's CSRF middleware + manual CSRF token in request headers. \\
+SQL Injection & Django ORM parameterizes all queries automatically. \\
+Object-level access & Custom \texttt{IsTeamOwner} permission class on team endpoints. \\
+Cross-origin access & Only specific origins in \texttt{CORS\_ALLOWED\_ORIGINS}; credentials required. \\
+Secret key exposure & SECRET\_KEY loaded from environment variable, raises ValueError if missing. \\
+Debug mode in production & DEBUG defaults to \texttt{False} if env variable not set. \\
+\bottomrule
+\end{tabularx}
+\end{center}
 
-\subsection{Dashboard Overview}
-The Dashboard serves as the command center, providing:
-\begin{itemize}
-    \item \textbf{Real-time Statistics:} Count of tasks across different statuses (To Do, In Progress, Done).
-    \item \textbf{Overdue Monitor:} Proactive identification of missed deadlines.
-    \item \textbf{Activity Summary:} Quick access to notifications and recent team assignments.
-\end{itemize}
 
-\subsection{Team Management}
-The "Teams" page allows users to:
-\begin{itemize}
-    \item Create workspaces and designate owners.
-    \item Manage memberships via email invites.
-    \item Role-based access control (RBAC) ensures only owners can delete teams or remove members.
-\end{itemize}
+% ════════════════════════════════════════════════════════════════════════════
+\section{Key Flows — End to End}
+% ════════════════════════════════════════════════════════════════════════════
 
-\subsection{Task Control}
-Tasks are managed within the context of a team:
-\begin{itemize}
-    \item \textbf{Permissions:} Only the task \textbf{creator} can edit or delete a task, preventing unauthorized modifications.
-    \item \textbf{Filtering:} Advanced filtering by status, priority, teammate, and overdue status.
-    \item \textbf{Automatic Notifications:} The system generates alerts when a task is assigned or when it becomes overdue.
-\end{itemize}
+\subsection{User Login Flow}
+\begin{enumerate}
+    \item User types email + password in \texttt{LoginPage.jsx}
+    \item React Hook Form validates locally (non-empty fields)
+    \item Axios sends \texttt{POST /api/auth/login/} with \texttt{credentials: 'include'}
+    \item Django \texttt{LoginView} calls \texttt{authenticate(email, password)}
+    \item If valid: \texttt{login(request, user)} creates session in DB, sets cookie in response
+    \item Response includes \texttt{csrf\_token} and \texttt{user} data
+    \item Frontend stores user in Zustand, stores csrf\_token in module variable
+    \item React Router navigates to \texttt{/} (Dashboard)
+\end{enumerate}
 
-\section{Security Features}
-\begin{itemize}
-    \item \textbf{CSRF Protection:} Secure cross-site request forgery prevention handled by Django.
-    \item \textbf{Password Hashing:} Industry-standard PBKDF2/bcrypt hashing (Django defaults).
-    \item \textbf{Protected Routes:} React components are shielded by a \texttt{ProtectedRoute} wrapper, ensuring only authenticated users reach private pages.
-\end{itemize}
+\subsection{Create Task Flow}
+\begin{enumerate}
+    \item User clicks "New Task" → \texttt{TaskModal} opens
+    \item User selects a team → frontend fetches \texttt{/api/teams/:id/members/} (staleTime:0 = always fresh)
+    \item User fills form and selects assignees
+    \item On submit: Axios sends \texttt{POST /api/tasks/} with \texttt{assigned\_to\_ids: [2, 3]}
+    \item Django \texttt{TaskViewSet.create()} validates all assignees are team members
+    \item Task is saved, a notification is sent to each assignee
+    \item React Query invalidates \texttt{['tasks']} cache → TasksPage refreshes automatically
+\end{enumerate}
 
-\section{Conclusion}
-The Team Task Manager combines a high-performance backend with a premium React frontend to deliver a production-ready collaboration tool. Its focus on user experience, clear permission logic, and proactive notification system makes it a comprehensive solution for modern team workflows.
+\subsection{Add Team Member Flow}
+\begin{enumerate}
+    \item Owner clicks "Add Member" in a team card
+    \item Types email in \texttt{MemberModal}
+    \item Frontend sends \texttt{POST /api/teams/:id/add\_member/} with \texttt{\{email: "...\}}
+    \item Django looks up user by email, creates a \texttt{TeamMembership} record
+    \item Frontend invalidates \textbf{both} \texttt{['teams']} AND \texttt{['team-members', teamId]}
+    \item Next time TaskModal opens for this team, the new member appears immediately — no refresh needed
+\end{enumerate}
+
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Quick Reference}
+% ════════════════════════════════════════════════════════════════════════════
+
+\subsection{Common Django Commands}
+\begin{termbox}
+# Run the dev server
+python manage.py runserver
+
+# Create migrations after changing models.py
+python manage.py makemigrations
+
+# Apply migrations to database
+python manage.py migrate
+
+# Create admin user
+python manage.py createsuperuser
+
+# Open Django shell (interactive Python with DB access)
+python manage.py shell
+
+# Check for issues
+python manage.py check
+\end{termbox}
+
+\subsection{Common Frontend Commands}
+\begin{termbox}
+# Start dev server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build locally
+npm run preview
+
+# Install a new package
+npm install package-name
+\end{termbox}
+
+\subsection{Git Workflow}
+\begin{termbox}
+# Stage all changes
+git add .
+
+# Commit with a message
+git commit -m "feat: add notification system"
+
+# Push to GitHub (triggers Render and Vercel auto-deploy)
+git push
+\end{termbox}
+
+\subsection{Environment Variable Summary}
+\begin{center}
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\textbf{Variable} & \textbf{Location} & \textbf{Description} \\
+\midrule
+SECRET\_KEY & backend/.env & Django secret (must be random, long) \\
+DEBUG & backend/.env & True in dev, False in prod \\
+ALLOWED\_HOSTS & backend/.env & Comma-separated list of allowed domains \\
+DATABASE\_URL & backend/.env & Full PostgreSQL connection string \\
+CORS\_ALLOWED\_ORIGINS & backend/.env & Frontend URL(s), comma-separated \\
+SESSION\_COOKIE\_AGE & backend/.env & Session lifetime in seconds (86400 = 24h) \\
+VITE\_API\_BASE\_URL & frontend/.env & Backend API URL \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+
+% ════════════════════════════════════════════════════════════════════════════
+\section{Glossary}
+% ════════════════════════════════════════════════════════════════════════════
+
+\begin{description}
+    \item[API] Application Programming Interface — a way for two programs to talk to each other using HTTP requests and JSON responses.
+    \item[REST] Representational State Transfer — a design pattern for APIs using standard HTTP methods (GET, POST, PATCH, DELETE).
+    \item[JSON] JavaScript Object Notation — a text format for data that both Python and JavaScript can read/write. Looks like: \texttt{\{"key": "value"\}}.
+    \item[Model (Django)] A Python class that maps to a database table. Each instance is a row.
+    \item[Migration] A file that describes database changes. Run with \texttt{migrate} to apply.
+    \item[Serializer] Converts Python objects to JSON (serialization) and validates JSON back to Python (deserialization).
+    \item[ViewSet] A Django class that handles multiple API actions (list, create, retrieve, update, delete) in one place.
+    \item[Session] A server-side record of a user being logged in. Identified by a cookie sent to the browser.
+    \item[CSRF Token] A random secret that proves a request came from your own frontend, not a malicious site.
+    \item[CORS] Cross-Origin Resource Sharing — browser security that restricts which external domains can make requests to an API.
+    \item[ForeignKey] A field linking two models — one-to-many (one team has many tasks).
+    \item[ManyToManyField] A field linking two models — many-to-many (many tasks can have many assignees).
+    \item[React Query] Library that manages fetching, caching, and synchronizing server data in React.
+    \item[Zustand] A minimal global state manager for React.
+    \item[Virtual Environment] An isolated Python installation so packages don't conflict between projects.
+    \item[Gunicorn] A production-grade Python web server (replaces Django's built-in dev server).
+    \item[Whitenoise] Django middleware that serves static files without a separate file server.
+    \item[Vite] A fast build tool and dev server for JavaScript/React projects.
+\end{description}
+
+
+\vfill
+\noindent\rule{\linewidth}{0.5pt}\\[0.5em]
+{\small\color{textgray} TaskFlow Technical Documentation · v1.0 · March 2026 · Built with Django 5.0 + React 18}
 
 \end{document}
