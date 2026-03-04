@@ -178,7 +178,7 @@ Python is the programming language the backend is written in. It reads almost li
 Django is a high-level \textbf{web framework} for Python. Think of it as a toolkit that handles:
 \begin{itemize}
     \item Connecting to the database
-    \item Handling user authentication and sessions
+    \item Handling user authentication and secure token management
     \item URL routing (deciding which code runs when someone visits a URL)
     \item Admin panel (a built-in dashboard for managing data)
 \end{itemize}
@@ -228,7 +228,7 @@ Manages server state — handles fetching data from the API, caching it, and aut
 A minimal global state manager. Used to store the logged-in user's information so any component can access it without passing it as a prop.
 
 \subsubsection{Axios}
-An HTTP client library. Used to make API calls to the Django backend. We have a custom instance \texttt{api.js} that automatically adds auth headers.
+An HTTP client library. Used to make API calls to the Django backend. We have a custom instance \texttt{api.js} that automatically attaches the authentication token to the \texttt{Authorization} header.
 
 \subsubsection{React Hook Form + Zod}
 Handles form validation. Zod defines the schema (rules), and React Hook Form manages the form state efficiently.
@@ -371,33 +371,22 @@ class Notification(models.Model):
 
 \subsection{Authentication — How Login Works}
 
-We use \textbf{Session-based authentication}, which works like this:
+We use \textbf{Token-based authentication}, which works like this:
 
 \begin{enumerate}
     \item User sends email + password to \texttt{POST /api/auth/login/}
     \item Django validates credentials using \texttt{authenticate()}
-    \item \texttt{login(request, user)} creates a \textbf{session} in the database and sends a \textbf{session cookie} to the browser
-    \item On every subsequent request, the browser automatically sends the cookie
-    \item Django looks up the session, finds the user, and the user is "logged in"
-    \item The response also includes a \texttt{csrf\_token} for security
+    \item On success, the backend generates a unique \textbf{Token} and returns it in the JSON response
+    \item The frontend stores this token in \textbf{Local Storage}
+    \item On every subsequent request, the frontend attaches this token to the \texttt{Authorization} header (\texttt{Authorization: Token <key>})
+    \item The backend verifies the token and identifies the user
 \end{enumerate}
 
 \begin{notebox}
-Because our frontend (Vercel) and backend (Render) are on \textbf{different domains}, cookies need special settings: \texttt{SameSite=None} and \texttt{Secure=True}. This is required for cross-origin cookie sharing.
+We switched to Token-based auth because \textbf{Incognito mode} and modern browsers block third-party cookies by default. Using headers ensures that authentication is stable and reliable across different domains (Vercel to Render).
 \end{notebox}
 
-\subsection{CSRF Protection}
-
-\textbf{CSRF} (Cross-Site Request Forgery) is an attack where a malicious website tricks your browser into making requests to our API using your session.
-
-Django's built-in CSRF protection works by:
-\begin{enumerate}
-    \item Setting a hidden \texttt{csrftoken} cookie 
-    \item Requiring every POST/PATCH/DELETE request to include this token in the header
-    \item Rejecting requests that don't have it
-\end{enumerate}
-
-Since cookies are unreliable across domains, we also \textbf{return the CSRF token in the login response JSON}, and the frontend stores it manually and attaches it to every request header (\texttt{X-CSRFToken}).
+Since we use Token Authentication, standard CSRF protection for API calls is handled by the token itself (as tokens are not automatically sent by browsers like cookies are, they are immune to CSRF). However, we still maintain CSRF awareness for the overall system security.
 
 \subsection{Permissions and Access Control}
 
@@ -419,7 +408,7 @@ All other endpoints require \texttt{IsAuthenticated} (user must be logged in).
 \section{API Endpoints Reference}
 % ════════════════════════════════════════════════════════════════════════════
 
-All endpoints are prefixed with \texttt{/api/}. Only auth endpoints are public; all others require a valid session cookie.
+All endpoints are prefixed with \texttt{/api/}. All endpoints (except login/register) require a valid Authorization token header.
 
 \subsection{Authentication Endpoints}
 \begin{center}
@@ -427,8 +416,8 @@ All endpoints are prefixed with \texttt{/api/}. Only auth endpoints are public; 
 \toprule
 \textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
 \midrule
-POST & /api/auth/register/ & Register a new user, returns user + csrf\_token \\
-POST & /api/auth/login/ & Login, returns user + csrf\_token \\
+POST & /api/auth/register/ & Register a new user, returns user + Auth Token \\
+POST & /api/auth/login/ & Login, returns user + Auth Token \\
 POST & /api/auth/logout/ & Destroy session \\
 GET & /api/auth/me/ & Get current logged-in user \\
 \bottomrule
@@ -561,8 +550,7 @@ Protected routes are wrapped in a \texttt{ProtectedRoute} component that checks 
 All HTTP requests go through a centralized Axios instance. It automatically:
 \begin{itemize}
     \item Sets the base URL to the backend
-    \item Includes \texttt{withCredentials: true} (sends session cookies)
-    \item Attaches \texttt{X-CSRFToken} header to every mutation request
+    \item Attaches \texttt{Authorization: Token <key>} header to every request
     \item Intercepts error responses and formats them into readable messages
 \end{itemize}
 
